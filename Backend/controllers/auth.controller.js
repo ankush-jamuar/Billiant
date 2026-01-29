@@ -37,13 +37,13 @@ export const register = async (req, res) => {
     email,
     password: hashedPassword,
     emailVerificationToken: verificationToken,
-    emailVerificationTokenExpires: Date.now() + 24 * 60 * 60 * 1000, // 24 hrs
+    emailVerificationTokenExpires: Date.now() + 7 * 24 * 60 * 60 * 1000,
   });
 
   // 🔔 TEMP email sending (console)
   console.log(
-    `Verify email link: http://localhost:5173/verify-email?token=${verificationToken}`,
-  );
+  `Verify email link: http://localhost:5173/verify-email?token=${verificationToken}`
+);
 
   const token = generateToken(user._id);
 
