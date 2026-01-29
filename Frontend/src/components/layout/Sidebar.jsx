@@ -1,24 +1,45 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React from "react";
+import { NavLink } from "react-router-dom";
 
 const Sidebar = () => {
-  return (
-    <aside className="w-64 min-h-screen border-r bg-white p-4">
-      <h2 className="text-xl font-bold mb-6">Billiant</h2>
+  const linkClass = "block rounded px-3 py-2 text-gray-700 hover:bg-gray-200";
 
-      <nav className="space-y-3">
-        <Link to="/dashboard" className="block text-gray-700">
+  const activeClass = "bg-gray-200 font-medium";
+
+  return (
+    <aside className="w-64 border-r bg-white p-4">
+      <h1 className="mb-6 text-xl font-semibold">Billiant</h1>
+
+      <nav className="space-y-1">
+        <NavLink
+          to="/dashboard"
+          className={({ isActive }) =>
+            `${linkClass} ${isActive ? activeClass : ""}`
+          }
+        >
           Dashboard
-        </Link>
-        <Link to="/clients" className="block text-gray-700">
+        </NavLink>
+
+        <NavLink
+          to="/clients"
+          className={({ isActive }) =>
+            `${linkClass} ${isActive ? activeClass : ""}`
+          }
+        >
           Clients
-        </Link>
-        <Link to="/invoices" className="block text-gray-700">
+        </NavLink>
+
+        <NavLink
+          to="/invoices"
+          className={({ isActive }) =>
+            `${linkClass} ${isActive ? activeClass : ""}`
+          }
+        >
           Invoices
-        </Link>
+        </NavLink>
       </nav>
     </aside>
-  )
-}
+  );
+};
 
-export default Sidebar
+export default Sidebar;
