@@ -16,24 +16,44 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // ---------- VALIDATION ----------
+  const validate = () => {
+    if (!name.trim()) return "Name is required";
+    if (name.trim().length < 2) return "Name must be at least 2 characters";
+    if (!email.trim()) return "Email is required";
+    if (!email.includes("@")) return "Enter a valid email address";
+    if (!password) return "Password is required";
+    if (password.length < 6)
+      return "Password must be at least 6 characters";
+    return null;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    const validationError = validate();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
     setLoading(true);
-    console.log("Register submit", name, email, password);
 
     try {
       const res = await registerApi({ name, email, password });
-
+      // auto-login after register
       login(res.data.data.token);
-
       navigate("/dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed");
+      setError(
+        err.response?.data?.message || "Registration failed"
+      );
     } finally {
       setLoading(false);
     }
   };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-sm border">
@@ -52,7 +72,6 @@ const Register = () => {
             label="Full Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            required
           />
 
           <Input
@@ -60,7 +79,6 @@ const Register = () => {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
           />
 
           <Input
@@ -68,7 +86,6 @@ const Register = () => {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
           />
 
           <Button type="submit" disabled={loading} className="w-full">

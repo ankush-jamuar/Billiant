@@ -18,6 +18,13 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    // ---------- VALIDATION ----------
+    if (!email.trim() || !password) {
+      setError("Email and password are required");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -25,7 +32,9 @@ const Login = () => {
       login(res.data.data.token);
       navigate("/dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
+      setError(
+        err.response?.data?.message || "Login failed"
+      );
     } finally {
       setLoading(false);
     }
@@ -50,7 +59,6 @@ const Login = () => {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
           />
 
           <Input
@@ -58,19 +66,12 @@ const Login = () => {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
           />
 
           <Button type="submit" disabled={loading} className="w-full">
             {loading ? "Logging in..." : "Login"}
           </Button>
         </form>
-        <p className="mt-4 text-sm text-gray-600">
-          Don’t have an account?{" "}
-          <Link to="/register" className="text-blue-600 hover:underline">
-            Register
-          </Link>
-        </p>
       </div>
     </div>
   );
