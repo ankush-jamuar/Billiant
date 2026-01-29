@@ -7,6 +7,9 @@ import AppLayout from "../layouts/AppLayout";
 import ProtectedRoute from "../routes/ProtectedRoute";
 import Clients from "../pages/clients/Clients";
 import Invoices from "../pages/invoices/Invoices";
+import NewInvoice from "../pages/invoices/NewInvoice";
+import InvoiceDetails from "../pages/invoices/InvoiceDetails";
+import EditInvoice from "../pages/invoices/EditInvoice";
 
 const AppRoutes = () => {
   return (
@@ -25,6 +28,9 @@ const AppRoutes = () => {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/clients" element={<Clients />} />
         <Route path="/invoices" element={<Invoices />} />
+        <Route path="/invoices/new/" element={<NewInvoice />}/>
+        <Route path="/invoices/:id" element={<InvoiceDetails />}/>
+        <Route path="/invoices/:id/edit" element={<EditInvoice />}/>
       </Route>
     </Routes>
   );
