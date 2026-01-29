@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import Dashboard from '../pages/dashboard/Dashboard';
 import Login from '../pages/auth/Login';
 import Register from '../pages/auth/Register';
+import VerifyEmail from '../pages/auth/VerifyEmail';
 
 const AppRoutes = () => {
   return (
@@ -10,6 +11,7 @@ const AppRoutes = () => {
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
     </Routes>
   )
 }
