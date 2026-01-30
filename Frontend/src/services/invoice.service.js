@@ -23,3 +23,11 @@ export const updateInvoice = (id, data) => {
 export const deleteInvoice = (id) => {
   return api.delete(`/api/invoices/${id}`);
 };
+
+export const downloadInvoicePdf = async (invoiceId) => {
+  const response = await api.get(`/api/invoices/${invoiceId}/pdf`, {
+    responseType: "blob",
+  });
+
+  return response.data;
+};

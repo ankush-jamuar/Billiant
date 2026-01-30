@@ -299,7 +299,7 @@ export const downloadInvoicePdf = async (req, res) => {
   }
 
   const template = fs.readFileSync(
-    path.resolve("src/templates/invoice.template.html"),
+    path.resolve("./templates/invoice.template.html"),
     "utf-8",
   );
 

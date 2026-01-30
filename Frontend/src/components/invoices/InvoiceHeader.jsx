@@ -1,11 +1,35 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import StatusBadge from "./StatusBadge";
-import { updateInvoiceStatus } from "../../services/invoice.service";
+import {
+  updateInvoiceStatus,
+  downloadInvoicePdf,
+} from "../../services/invoice.service";
 
 const InvoiceHeader = ({ invoice, onStatusChange }) => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const handleDownloadPdf = async () => {
+    try {
+      const pdfBlob = await downloadInvoicePdf(invoice._id);
+
+      const url = window.URL.createObjectURL(
+        new Blob([pdfBlob], { type: "application/pdf" }),
+      );
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${invoice.invoiceNumber}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert("Failed to download PDF");
+    }
+  };
 
   const handleSend = async () => {
     try {
@@ -50,8 +74,7 @@ const InvoiceHeader = ({ invoice, onStatusChange }) => {
         </p>
 
         <p className="text-sm text-gray-600">
-          Due:{" "}
-          {new Date(invoice.dueDate).toLocaleDateString("en-IN")}
+          Due: {new Date(invoice.dueDate).toLocaleDateString("en-IN")}
         </p>
       </div>
 
@@ -62,9 +85,7 @@ const InvoiceHeader = ({ invoice, onStatusChange }) => {
         {invoice.status === "draft" && (
           <>
             <button
-              onClick={() =>
-                navigate(`/invoices/${invoice._id}/edit`)
-              }
+              onClick={() => navigate(`/invoices/${invoice._id}/edit`)}
               className="rounded bg-gray-200 px-3 py-1 text-sm text-gray-800 hover:bg-gray-300"
             >
               Edit
@@ -87,6 +108,14 @@ const InvoiceHeader = ({ invoice, onStatusChange }) => {
             className="rounded bg-green-600 px-3 py-1 text-sm text-white hover:bg-green-700 disabled:opacity-60"
           >
             {loading ? "Updating..." : "Mark as Paid"}
+          </button>
+        )}
+        {invoice.status !== "draft" && (
+          <button
+            onClick={handleDownloadPdf}
+            className="rounded bg-gray-100 px-3 py-1 text-sm text-gray-800 hover:bg-gray-200"
+          >
+            Download PDF
           </button>
         )}
       </div>
