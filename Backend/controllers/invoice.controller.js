@@ -1,4 +1,8 @@
+import fs from "fs";
+import path from "path";
 import Invoice from "../models/invoice.model.js";
+import { generatePdfFromHtml } from "../services/pdf.services.js";
+import { renderInvoiceTemplate } from "../utils/renderInvoiceTemplate.js";
 
 /* ---------------------------------
    Helpers
@@ -279,4 +283,33 @@ export const updateInvoiceStatus = async (req, res) => {
       message: "Failed to update invoice status",
     });
   }
+};
+
+export const downloadInvoicePdf = async (req, res) => {
+  const invoice = await Invoice.findOne({
+    _id: req.params.id,
+    userId: req.user._id,
+  }).populate("clientId");
+
+  if (!invoice) {
+    return res.status(404).json({
+      success: false,
+      message: "Invoice not found",
+    });
+  }
+
+  const template = fs.readFileSync(
+    path.resolve("src/templates/invoice.template.html"),
+    "utf-8",
+  );
+
+  const html = renderInvoiceTemplate(template, invoice);
+  const pdf = await generatePdfFromHtml(html);
+
+  res.set({
+    "Content-Type": "application/pdf",
+    "Content-Disposition": `attachment; filename=${invoice.invoiceNumber}.pdf`,
+  });
+
+  res.send(pdf);
 };
