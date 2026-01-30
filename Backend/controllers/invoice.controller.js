@@ -3,6 +3,7 @@ import path from "path";
 import Invoice from "../models/invoice.model.js";
 import { generatePdfFromHtml } from "../services/pdf.services.js";
 import { renderInvoiceTemplate } from "../utils/renderInvoiceTemplate.js";
+import { sendInvoiceEmail } from "../services/email.service.js";
 
 /* ---------------------------------
    Helpers
@@ -16,9 +17,7 @@ const normalizeNumber = (v) => {
 const calculateTotals = (items, tax = 0, discount = 0) => {
   const subtotal = items.reduce((sum, item) => {
     return (
-      sum +
-      normalizeNumber(item.quantity) *
-        normalizeNumber(item.unitPrice)
+      sum + normalizeNumber(item.quantity) * normalizeNumber(item.unitPrice)
     );
   }, 0);
 
@@ -69,11 +68,7 @@ export const createInvoice = async (req, res) => {
       };
     });
 
-    const totals = calculateTotals(
-      normalizedItems,
-      tax,
-      discount
-    );
+    const totals = calculateTotals(normalizedItems, tax, discount);
 
     const invoice = await Invoice.create({
       userId: req.user._id,
@@ -214,11 +209,7 @@ export const updateInvoice = async (req, res) => {
       };
     });
 
-    const totals = calculateTotals(
-      normalizedItems,
-      tax,
-      discount
-    );
+    const totals = calculateTotals(normalizedItems, tax, discount);
 
     invoice.clientId = clientId;
     invoice.items = normalizedItems;
@@ -255,18 +246,10 @@ export const updateInvoiceStatus = async (req, res) => {
   try {
     const { status } = req.body;
 
-    const allowed = ["sent", "paid"];
-    if (!allowed.includes(status)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid status",
-      });
-    }
-
     const invoice = await Invoice.findOne({
       _id: req.params.id,
       userId: req.user._id,
-    });
+    }).populate("clientId");
 
     if (!invoice) {
       return res.status(404).json({
@@ -275,6 +258,7 @@ export const updateInvoiceStatus = async (req, res) => {
       });
     }
 
+    // 🔒 Guard rules
     if (invoice.status === "paid") {
       return res.status(400).json({
         success: false,
@@ -289,8 +273,44 @@ export const updateInvoiceStatus = async (req, res) => {
       });
     }
 
+    // 🚨 KEY PART: only send email when draft → sent
+    const shouldSendEmail = invoice.status === "draft" && status === "sent";
+
     invoice.status = status;
     await invoice.save();
+
+    // 📧 SEND EMAIL ONLY HERE
+    if (shouldSendEmail) {
+      const templatePath = path.resolve("./templates/invoice.template.html");
+
+      const template = fs.readFileSync(templatePath, "utf-8");
+
+      const html = renderInvoiceTemplate({
+        invoiceNumber: invoice.invoiceNumber,
+        clientName: invoice.clientId.name,
+        clientEmail: invoice.clientId.email,
+        items: invoice.items,
+        subtotal: invoice.subtotal,
+        tax: invoice.tax,
+        taxAmount: invoice.taxAmount,
+        discount: invoice.discount,
+        total: invoice.total,
+      });
+
+      const pdfBuffer = await generatePdfFromHtml(html);
+
+      await sendInvoiceEmail({
+        to: invoice.clientId.email,
+        subject: `Invoice ${invoice.invoiceNumber} from Billiant`,
+        html: `
+          <p>Hi ${invoice.clientId.name},</p>
+          <p>Please find your invoice attached.</p>
+          <p>Thanks,<br/>Billiant</p>
+        `,
+        pdfBuffer,
+        filename: `${invoice.invoiceNumber}.pdf`,
+      });
+    }
 
     res.json({
       success: true,
@@ -327,7 +347,7 @@ export const downloadInvoicePdf = async (req, res) => {
     process.cwd(),
     "src",
     "templates",
-    "invoice.template.html"
+    "invoice.template.html",
   );
 
   const html = renderInvoiceTemplate({
@@ -357,4 +377,60 @@ export const downloadInvoicePdf = async (req, res) => {
   });
 
   res.send(pdf);
+};
+
+export const sendInvoiceByEmail = async (req, res) => {
+  const invoice = await Invoice.findOne({
+    _id: req.params.id,
+    userId: req.user._id,
+  }).populate("clientId");
+
+  if (!invoice) {
+    return res.status(404).json({
+      success: false,
+      message: "Invoice not found",
+    });
+  }
+
+  if (!invoice.clientId.email) {
+    return res.status(400).json({
+      success: false,
+      message: "Client email is missing",
+    });
+  }
+
+  // 1️⃣ Generate PDF
+  const html = renderInvoiceTemplate({
+    invoiceNumber: invoice.invoiceNumber,
+    clientName: invoice.clientId.name,
+    clientEmail: invoice.clientId.email,
+    items: invoice.items,
+    subtotal: invoice.subtotal,
+    tax: invoice.tax,
+    taxAmount: invoice.taxAmount,
+    discount: invoice.discount,
+    total: invoice.total,
+  });
+
+  const pdfBuffer = await generatePdfFromHtml(html);
+
+  // 2️⃣ Send email
+  await sendInvoiceEmail({
+    to: invoice.clientId.email,
+    subject: `Invoice ${invoice.invoiceNumber}`,
+    text: `Please find attached invoice ${invoice.invoiceNumber}.`,
+    pdfBuffer,
+    filename: `${invoice.invoiceNumber}.pdf`,
+  });
+
+  // 3️⃣ Auto status update
+  if (invoice.status === "draft") {
+    invoice.status = "sent";
+    await invoice.save();
+  }
+
+  res.json({
+    success: true,
+    message: "Invoice sent successfully",
+  });
 };

@@ -34,13 +34,19 @@ const InvoiceHeader = ({ invoice, onStatusChange }) => {
   const handleSend = async () => {
     try {
       setLoading(true);
-      await updateInvoiceStatus(invoice._id, "sent");
 
-      // ✅ defensive call
-      onStatusChange?.();
+      const res = await updateInvoiceStatus(invoice._id, "sent");
+
+      if (!res.data?.success) {
+        throw new Error(res.data?.message || "Send failed");
+      }
+
+      onStatusChange(); // refresh invoice
     } catch (err) {
-      console.error("Send invoice failed", err);
-      alert("Failed to send invoice");
+      console.error("Send invoice error:", err);
+      alert(
+        err.response?.data?.message || err.message || "Failed to send invoice",
+      );
     } finally {
       setLoading(false);
     }

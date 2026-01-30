@@ -31,3 +31,7 @@ export const downloadInvoicePdf = async (invoiceId) => {
 
   return response.data;
 };
+
+export const sendInvoice = (id) => {
+  return api.post(`/api/invoices/${id}/send`);
+};
