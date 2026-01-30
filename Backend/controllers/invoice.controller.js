@@ -4,6 +4,7 @@ import Invoice from "../models/invoice.model.js";
 import { generatePdfFromHtml } from "../services/pdf.services.js";
 import { renderInvoiceTemplate } from "../utils/renderInvoiceTemplate.js";
 import { sendInvoiceEmail } from "../services/email.service.js";
+import { renderInvoicePdf } from "../utils/renderInvoicePdf.js";
 
 /* ---------------------------------
    Helpers
@@ -273,40 +274,6 @@ export const updateInvoiceStatus = async (req, res) => {
       });
     }
 
-    const shouldSendEmail = invoice.status === "draft" && status === "sent";
-
-    // 🔒 EMAIL-FIRST LOGIC
-    if (shouldSendEmail) {
-      try {
-        console.log("📨 Sending invoice email to:", invoice.clientId.email);
-
-        const html = renderInvoiceTemplate({
-          clientName: invoice.clientId.name,
-          invoiceNumber: invoice.invoiceNumber,
-          total: invoice.total,
-        });
-
-        const pdfBuffer = await generatePdfFromHtml(html);
-
-        await sendInvoiceEmail({
-          to: invoice.clientId.email,
-          subject: `Invoice ${invoice.invoiceNumber} from Billiant`,
-          html,
-          pdfBuffer,
-          filename: `${invoice.invoiceNumber}.pdf`,
-        });
-
-        console.log("✅ Email sent, updating status...");
-      } catch (emailErr) {
-        console.error("❌ Email failed, status NOT changed:", emailErr);
-
-        return res.status(500).json({
-          success: false,
-          message: "Failed to send invoice email",
-        });
-      }
-    }
-
     // ✅ Update status ONLY if email succeeded
     invoice.status = status;
     await invoice.save();
@@ -380,86 +347,62 @@ export const downloadInvoicePdf = async (req, res) => {
 
 export const sendInvoiceByEmail = async (req, res) => {
   try {
+    console.log("🚀 SEND INVOICE ENDPOINT HIT");
+    console.log("🔥 USER:", req.user);
+
     const invoice = await Invoice.findOne({
       _id: req.params.id,
       userId: req.user._id,
     }).populate("clientId");
 
-    if (!invoice) {
-      return res.status(404).json({
-        success: false,
-        message: "Invoice not found",
-      });
-    }
+    console.log("📄 INVOICE:", invoice);
 
-    if (!invoice.clientId?.email) {
-      return res.status(400).json({
-        success: false,
-        message: "Client email is missing",
-      });
-    }
+    // 1️⃣ Generate PDF
+    const pdfHtml = renderInvoicePdf(invoice);
+    console.log("📄 PDF HTML GENERATED");
 
-    // ❌ Do not resend paid invoices
-    if (invoice.status === "paid") {
-      return res.status(400).json({
-        success: false,
-        message: "Paid invoice cannot be sent again",
-      });
-    }
+    const pdfBuffer = await generatePdfFromHtml(pdfHtml);
+    console.log("📎 PDF BUFFER SIZE:", pdfBuffer?.length);
 
-    /* -------------------------------
-       1️⃣ Generate PDF
-    -------------------------------- */
-
-    const html = renderInvoiceTemplate({
-      invoiceNumber: invoice.invoiceNumber,
+    // 2️⃣ Generate EMAIL
+    const emailHtml = renderInvoiceTemplate({
       clientName: invoice.clientId.name,
-      clientEmail: invoice.clientId.email,
-      items: invoice.items,
-      subtotal: invoice.subtotal,
-      tax: invoice.tax,
-      taxAmount: invoice.taxAmount,
-      discount: invoice.discount,
+      invoiceNumber: invoice.invoiceNumber,
       total: invoice.total,
+      senderName: req.user.name,
+      senderEmail: req.user.email,
     });
+    console.log("📧 EMAIL HTML GENERATED");
 
-    const pdfBuffer = await generatePdfFromHtml(html);
-
-    /* -------------------------------
-       2️⃣ Send Email (EMAIL FIRST)
-    -------------------------------- */
-
+    // 3️⃣ Send mail
     await sendInvoiceEmail({
       to: invoice.clientId.email,
-      subject: `Invoice ${invoice.invoiceNumber} from Billiant`,
-      html: `
-        <p>Hi ${invoice.clientId.name},</p>
-        <p>Please find attached your invoice <strong>${invoice.invoiceNumber}</strong>.</p>
-        <p>Thanks,<br/>Billiant</p>
-      `,
-      pdfBuffer,
-      filename: `${invoice.invoiceNumber}.pdf`,
+      replyTo: req.user.email,
+      subject: `Invoice ${invoice.invoiceNumber}`,
+      html: emailHtml,
+      attachments: [
+        {
+          filename: `${invoice.invoiceNumber}.pdf`,
+          content: pdfBuffer,
+        },
+      ],
     });
 
-    /* -------------------------------
-       3️⃣ Update status ONLY after email success
-    -------------------------------- */
+    console.log("✅ EMAIL SENT");
 
+    // 4️⃣ Update status
     if (invoice.status === "draft") {
       invoice.status = "sent";
       await invoice.save();
     }
 
-    res.json({
-      success: true,
-      message: "Invoice sent successfully",
-    });
+    res.json({ success: true });
   } catch (err) {
-    console.error("❌ Send invoice failed:", err);
-
+    console.error("❌ SEND INVOICE FAILED:", err);
     res.status(500).json({
       success: false,
-      message: "Failed to send invoice email",
+      message: err.message,
     });
   }
 };
+

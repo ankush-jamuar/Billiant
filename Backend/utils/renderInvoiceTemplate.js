@@ -1,23 +1,22 @@
 import fs from "fs";
 import path from "path";
 
-const ROOT_DIR = path.resolve();
-
 export const renderInvoiceTemplate = ({
-  clientName,
   invoiceNumber,
+  clientName,
   total,
+  senderName,
+  senderEmail,
 }) => {
-  const templatePath = path.join(
-    ROOT_DIR,
-    "templates",
-    "invoice.template.html"
+  const template = fs.readFileSync(
+    path.resolve("templates/invoice.template.html"),
+    "utf-8"
   );
 
-  const template = fs.readFileSync(templatePath, "utf-8");
-
   return template
-    .replace("{{clientName}}", clientName)
     .replace("{{invoiceNumber}}", invoiceNumber)
-    .replace("{{total}}", total);
+    .replace("{{clientName}}", clientName)
+    .replace("{{total}}", total)
+    .replace("{{senderName}}", senderName)
+    .replace("{{senderEmail}}", senderEmail);
 };

@@ -4,6 +4,7 @@ import StatusBadge from "./StatusBadge";
 import {
   updateInvoiceStatus,
   downloadInvoicePdf,
+  sendInvoice,
 } from "../../services/invoice.service";
 
 const InvoiceHeader = ({ invoice, onStatusChange }) => {
@@ -32,25 +33,16 @@ const InvoiceHeader = ({ invoice, onStatusChange }) => {
   };
 
   const handleSend = async () => {
-    try {
-      setLoading(true);
-
-      const res = await updateInvoiceStatus(invoice._id, "sent");
-
-      if (!res.data?.success) {
-        throw new Error(res.data?.message || "Send failed");
-      }
-
-      onStatusChange(); // refresh invoice
-    } catch (err) {
-      console.error("Send invoice error:", err);
-      alert(
-        err.response?.data?.message || err.message || "Failed to send invoice",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+    await sendInvoice(invoice._id);   // 🔥 THIS
+    onStatusChange();                 // refresh invoice
+  } catch (err) {
+    alert("Failed to send invoice");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleMarkPaid = async () => {
     try {
