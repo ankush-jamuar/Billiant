@@ -1,7 +1,7 @@
-import StatusBadge from "./StatusBadge";
-import { useNavigate } from "react-router-dom";
-import { updateInvoiceStatus } from "../../services/invoice.service";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import StatusBadge from "./StatusBadge";
+import { updateInvoiceStatus } from "../../services/invoice.service";
 
 const InvoiceHeader = ({ invoice, onStatusChange }) => {
   const [loading, setLoading] = useState(false);
@@ -11,8 +11,11 @@ const InvoiceHeader = ({ invoice, onStatusChange }) => {
     try {
       setLoading(true);
       await updateInvoiceStatus(invoice._id, "sent");
-      onStatusChange(); // refresh invoice
+
+      // ✅ defensive call
+      onStatusChange?.();
     } catch (err) {
+      console.error("Send invoice failed", err);
       alert("Failed to send invoice");
     } finally {
       setLoading(false);
@@ -23,8 +26,11 @@ const InvoiceHeader = ({ invoice, onStatusChange }) => {
     try {
       setLoading(true);
       await updateInvoiceStatus(invoice._id, "paid");
-      onStatusChange(); // refresh invoice
+
+      // ✅ defensive call
+      onStatusChange?.();
     } catch (err) {
+      console.error("Mark paid failed", err);
       alert("Failed to mark invoice as paid");
     } finally {
       setLoading(false);
@@ -32,27 +38,34 @@ const InvoiceHeader = ({ invoice, onStatusChange }) => {
   };
 
   return (
-    <div className="flex justify-between items-start rounded bg-white p-6 shadow-sm">
+    <div className="flex items-start justify-between rounded bg-white p-6 shadow-sm">
+      {/* LEFT */}
       <div>
         <h1 className="text-2xl font-semibold">
           Invoice {invoice.invoiceNumber}
         </h1>
-        <p className="text-sm text-gray-600">
+
+        <p className="mt-1 text-sm text-gray-600">
           Client: {invoice.clientId?.name}
         </p>
+
         <p className="text-sm text-gray-600">
-          Due: {new Date(invoice.dueDate).toLocaleDateString("en-IN")}
+          Due:{" "}
+          {new Date(invoice.dueDate).toLocaleDateString("en-IN")}
         </p>
       </div>
 
+      {/* RIGHT */}
       <div className="flex items-center gap-3">
         <StatusBadge status={invoice.status} />
 
         {invoice.status === "draft" && (
           <>
             <button
-              onClick={() => navigate(`/invoices/${invoice._id}/edit`)}
-              className="rounded bg-gray-200 px-3 py-1 text-sm text-gray-800"
+              onClick={() =>
+                navigate(`/invoices/${invoice._id}/edit`)
+              }
+              className="rounded bg-gray-200 px-3 py-1 text-sm text-gray-800 hover:bg-gray-300"
             >
               Edit
             </button>
@@ -60,7 +73,7 @@ const InvoiceHeader = ({ invoice, onStatusChange }) => {
             <button
               onClick={handleSend}
               disabled={loading}
-              className="rounded bg-blue-600 px-3 py-1 text-sm text-white disabled:opacity-60"
+              className="rounded bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700 disabled:opacity-60"
             >
               {loading ? "Sending..." : "Send Invoice"}
             </button>
@@ -71,7 +84,7 @@ const InvoiceHeader = ({ invoice, onStatusChange }) => {
           <button
             onClick={handleMarkPaid}
             disabled={loading}
-            className="rounded bg-green-600 px-3 py-1 text-sm text-white disabled:opacity-60"
+            className="rounded bg-green-600 px-3 py-1 text-sm text-white hover:bg-green-700 disabled:opacity-60"
           >
             {loading ? "Updating..." : "Mark as Paid"}
           </button>
