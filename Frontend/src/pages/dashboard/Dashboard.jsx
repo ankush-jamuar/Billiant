@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import MetricCard from "../../components/dashboard/MetricCard";
 import RecentInvoices from "../../components/dashboard/RecentInvoices";
+import StatusChart from "../../components/dashboard//StatusChart";
 import { getDashboardSummary } from "../../services/dashboard.services";
 
 const Dashboard = () => {

@@ -2,6 +2,13 @@ import Invoice from "../models/invoice.model.js";
 
 export const getDashboardSummary = async (req, res) => {
   try {
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
     const userId = req.user._id;
     const today = new Date();
 
@@ -34,12 +41,13 @@ export const getDashboardSummary = async (req, res) => {
       dueDate: { $lt: today },
     });
 
-    // Recent invoices
+    // Recent invoices (DEFENSIVE)
     const recentInvoices = await Invoice.find({ userId })
       .sort({ createdAt: -1 })
       .limit(5)
       .populate("clientId", "name")
-      .select("invoiceNumber total status clientId");
+      .select("invoiceNumber total status clientId")
+      .lean();
 
     // Status breakdown
     const statusAgg = await Invoice.aggregate([
@@ -47,14 +55,12 @@ export const getDashboardSummary = async (req, res) => {
       { $group: { _id: "$status", count: { $sum: 1 } } },
     ]);
 
-    const statusBreakdown = {
-      draft: 0,
-      sent: 0,
-      paid: 0,
-    };
+    const statusBreakdown = { draft: 0, sent: 0, paid: 0 };
 
     statusAgg.forEach((s) => {
-      statusBreakdown[s._id] = s.count;
+      if (statusBreakdown[s._id] !== undefined) {
+        statusBreakdown[s._id] = s.count;
+      }
     });
 
     return res.json({
@@ -66,15 +72,17 @@ export const getDashboardSummary = async (req, res) => {
         overdueCount,
         recentInvoices: recentInvoices.map((inv) => ({
           _id: inv._id,
-          invoiceNumber: inv.invoiceNumber,
-          clientName: inv.clientId?.name,
-          total: inv.total,
+          invoiceNumber: inv.invoiceNumber || "—",
+          clientName: inv.clientId?.name || "—",
+          total: inv.total || 0,
           status: inv.status,
         })),
         statusBreakdown,
       },
     });
   } catch (error) {
+    console.error("Dashboard summary error:", error);
+
     return res.status(500).json({
       success: false,
       message: "Failed to load dashboard data",
