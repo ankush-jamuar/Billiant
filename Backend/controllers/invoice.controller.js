@@ -34,7 +34,7 @@ export const createInvoice = async (req, res) => {
   const totals = calculateTotals(items, tax, discount);
 
   const invoice = await Invoice.create({
-    userId: req.userId,
+    userId: req.req.user._id,
     clientId,
     items: items.map((item) => ({
       ...item,
@@ -55,7 +55,7 @@ export const createInvoice = async (req, res) => {
 
 export const getInvoices = async (req, res) => {
   const invoices = await Invoice.find({
-    userId: req.userId,
+    userId: req.user._id,
   })
     .sort({ createdAt: -1 })
     .populate("clientId", "name email");
@@ -69,7 +69,7 @@ export const getInvoices = async (req, res) => {
 export const getInvoiceById = async (req, res) => {
   const invoice = await Invoice.findOne({
     _id: req.params.id,
-    userId: req.userId,
+    userId: req.user._id,
   }).populate("clientId");
 
   if (!invoice) {
@@ -98,7 +98,7 @@ export const updateInvoiceStatus = async (req, res) => {
 
   const invoice = await Invoice.findOne({
     _id: req.params.id,
-    userId: req.userId,
+    userId: req.user._id,
   });
 
   if (!invoice) {

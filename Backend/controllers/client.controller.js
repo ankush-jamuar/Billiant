@@ -11,7 +11,7 @@ export const createClient = async (req, res) => {
   }
 
   const client = await Client.create({
-    userId: req.userId,
+    userId: req.user._id,
     name,
     email,
     phone,
@@ -25,7 +25,7 @@ export const createClient = async (req, res) => {
 };
 
 export const getClients = async (req, res) => {
-  const clients = await Client.find({ userId: req.userId }).sort({
+  const clients = await Client.find({ userId: req.user._id }).sort({
     createdAt: -1,
   });
 

@@ -1,21 +1,17 @@
-import { useAuth } from "../../context/AuthContext.jsx";
+import { useLocation } from "react-router-dom";
+import { PAGE_TITLES } from "../../constants/PageTitles";
 
 const Topbar = () => {
-  const { logout } = useAuth();
+  const location = useLocation();
+
+  const title =
+    PAGE_TITLES[location.pathname] || "Dashboard";
 
   return (
-    <header className="flex items-center justify-between border-b bg-white px-6 py-4">
-      <h2 className="text-lg font-medium text-gray-800">
-        Dashboard
-      </h2>
-
-      <button
-        onClick={logout}
-        className="text-sm text-gray-600 hover:text-gray-900"
-      >
-        Logout
-      </button>
-    </header>
+    <div className="h-14 bg-white border-b flex items-center px-6 justify-between">
+      <h1 className="text-lg font-medium">{title}</h1>
+      <button>Logout</button>
+    </div>
   );
 };
 

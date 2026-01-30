@@ -3,19 +3,24 @@ import { useNavigate } from "react-router-dom";
 import { getInvoices } from "../../services/invoice.service";
 import InvoiceTable from "../../components/invoices/InvoiceTable";
 
-
 const Invoices = () => {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const loadInvoices = async () => {
+  const loadInvoices = async () => {
+    try {
+      setLoading(true);
       const res = await getInvoices();
       setInvoices(res.data.data);
+    } catch (err) {
+      console.error("Failed to load invoices", err);
+    } finally {
       setLoading(false);
-    };
+    }
+  };
 
+  useEffect(() => {
     loadInvoices();
   }, []);
 

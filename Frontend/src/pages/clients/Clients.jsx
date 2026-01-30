@@ -8,13 +8,19 @@ const Clients = () => {
   const [loading, setLoading] = useState(true);
   const [openModal, setOpenModal] = useState(false);
 
-  useEffect(() => {
-    const loadClients = async () => {
+  const loadClients = async () => {
+    try {
+      setLoading(true);
       const res = await getClients();
       setClients(res.data.data);
+    } catch (err) {
+      console.error("Failed to load clients", err);
+    } finally {
       setLoading(false);
-    };
+    }
+  };
 
+  useEffect(() => {
     loadClients();
   }, []);
 
