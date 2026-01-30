@@ -8,26 +8,30 @@ import { renderInvoiceTemplate } from "../utils/renderInvoiceTemplate.js";
    Helpers
 ---------------------------------- */
 
-const normalizeNumber = (value) => {
-  const num = Number(value);
-  return Number.isFinite(num) ? num : 0;
+const normalizeNumber = (v) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
 };
 
 const calculateTotals = (items, tax = 0, discount = 0) => {
   const subtotal = items.reduce((sum, item) => {
-    const qty = normalizeNumber(item.quantity);
-    const unitPrice = normalizeNumber(item.unitPrice);
-    return sum + qty * unitPrice;
+    return (
+      sum +
+      normalizeNumber(item.quantity) *
+        normalizeNumber(item.unitPrice)
+    );
   }, 0);
 
-  const taxAmount = (subtotal * normalizeNumber(tax)) / 100;
+  const taxPercent = normalizeNumber(tax);
+  const taxAmount = (subtotal * taxPercent) / 100;
+  const discountAmount = normalizeNumber(discount);
 
   return {
     subtotal,
-    tax: normalizeNumber(tax),
+    tax: taxPercent,
     taxAmount,
-    discount: normalizeNumber(discount),
-    total: subtotal + taxAmount - normalizeNumber(discount),
+    discount: discountAmount,
+    total: subtotal + taxAmount - discountAmount,
   };
 };
 
@@ -65,7 +69,11 @@ export const createInvoice = async (req, res) => {
       };
     });
 
-    const totals = calculateTotals(normalizedItems, tax, discount);
+    const totals = calculateTotals(
+      normalizedItems,
+      tax,
+      discount
+    );
 
     const invoice = await Invoice.create({
       userId: req.user._id,
@@ -75,7 +83,13 @@ export const createInvoice = async (req, res) => {
       status: "draft",
       issueDate,
       dueDate,
-      ...totals,
+
+      // 🔒 Explicit snapshot values (IMPORTANT)
+      subtotal: totals.subtotal,
+      tax: totals.tax,
+      taxAmount: totals.taxAmount,
+      discount: totals.discount,
+      total: totals.total,
     });
 
     res.status(201).json({
@@ -200,12 +214,18 @@ export const updateInvoice = async (req, res) => {
       };
     });
 
-    const totals = calculateTotals(normalizedItems, tax, discount);
+    const totals = calculateTotals(
+      normalizedItems,
+      tax,
+      discount
+    );
 
     invoice.clientId = clientId;
     invoice.items = normalizedItems;
     invoice.issueDate = issueDate;
     invoice.dueDate = dueDate;
+
+    // 🔒 Explicit snapshot update
     invoice.subtotal = totals.subtotal;
     invoice.tax = totals.tax;
     invoice.taxAmount = totals.taxAmount;
@@ -285,6 +305,10 @@ export const updateInvoiceStatus = async (req, res) => {
   }
 };
 
+/* ---------------------------------
+   DOWNLOAD PDF
+---------------------------------- */
+
 export const downloadInvoicePdf = async (req, res) => {
   const invoice = await Invoice.findOne({
     _id: req.params.id,
@@ -298,12 +322,33 @@ export const downloadInvoicePdf = async (req, res) => {
     });
   }
 
-  const template = fs.readFileSync(
-    path.resolve("./templates/invoice.template.html"),
-    "utf-8",
+  // 🔒 Absolute path safety
+  const templatePath = path.join(
+    process.cwd(),
+    "src",
+    "templates",
+    "invoice.template.html"
   );
 
-  const html = renderInvoiceTemplate(template, invoice);
+  const html = renderInvoiceTemplate({
+    invoiceNumber: invoice.invoiceNumber,
+    clientName: invoice.clientId.name,
+    clientEmail: invoice.clientId.email,
+
+    items: invoice.items,
+
+    subtotal: invoice.subtotal,
+    tax: invoice.tax,
+    taxAmount: invoice.taxAmount, // ✅ NOW GUARANTEED
+    discount: invoice.discount,
+    total: invoice.total,
+  });
+
+  console.log("PDF DATA:", {
+    tax: invoice.tax,
+    taxAmount: invoice.taxAmount,
+  });
+
   const pdf = await generatePdfFromHtml(html);
 
   res.set({

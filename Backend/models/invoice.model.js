@@ -54,6 +54,11 @@ const invoiceSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    taxAmount: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
     discount: {
       type: Number,
       default: 0,
@@ -71,7 +76,7 @@ const invoiceSchema = new mongoose.Schema(
       type: Date,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export default mongoose.model("Invoice", invoiceSchema);
