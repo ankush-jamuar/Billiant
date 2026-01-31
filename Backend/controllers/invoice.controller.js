@@ -352,3 +352,60 @@ export const sendInvoiceByEmail = async (req, res) => {
     });
   }
 };
+
+export const resendInvoiceEmail = async (req, res) => {
+  try {
+    const invoice = await Invoice.findOne({
+      _id: req.params.id,
+      userId: req.user._id,
+    }).populate("clientId");
+
+    if (!invoice) {
+      return res.status(404).json({
+        success: false,
+        message: "Invoice not found",
+      });
+    }
+
+    if (invoice.status !== "sent") {
+      return res.status(400).json({
+        success: false,
+        message: "Only sent invoices can be resent",
+      });
+    }
+
+    // 🔥 Reuse EXISTING logic
+    await sendInvoiceByEmailInternal(invoice, req.user);
+
+    return res.json({
+      success: true,
+      message: "Invoice resent successfully",
+    });
+  } catch (err) {
+    console.error("❌ RESEND FAILED:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to resend invoice",
+    });
+  }
+};
+
+const sendInvoiceByEmailInternal = async (invoice, user) => {
+  const pdfHtml = renderInvoicePdf(invoice);
+  const pdfBuffer = await generatePdfFromHtml(pdfHtml);
+
+  const emailHtml = renderInvoiceTemplate({
+    clientName: invoice.clientId.name,
+    invoiceNumber: invoice.invoiceNumber,
+    total: invoice.total,
+  });
+
+  await sendInvoiceEmail({
+    to: invoice.clientId.email,
+    replyTo: user.email, // ✅ user reply-to
+    subject: `Invoice ${invoice.invoiceNumber}`,
+    html: emailHtml,
+    pdfBuffer,
+    filename: `${invoice.invoiceNumber}.pdf`,
+  });
+};

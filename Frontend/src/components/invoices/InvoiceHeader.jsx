@@ -5,10 +5,12 @@ import {
   updateInvoiceStatus,
   downloadInvoicePdf,
   sendInvoice,
+  resendInvoice,
 } from "../../services/invoice.service";
 
 const InvoiceHeader = ({ invoice, onStatusChange }) => {
   const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
   const navigate = useNavigate();
 
   const handleDownloadPdf = async () => {
@@ -33,16 +35,35 @@ const InvoiceHeader = ({ invoice, onStatusChange }) => {
   };
 
   const handleSend = async () => {
-  try {
-    setLoading(true);
-    await sendInvoice(invoice._id);   // 🔥 THIS
-    onStatusChange();                 // refresh invoice
-  } catch (err) {
-    alert("Failed to send invoice");
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      setLoading(true);
+      await sendInvoice(invoice._id); // 🔥 THIS
+      onStatusChange(); // refresh invoice
+    } catch (err) {
+      alert("Failed to send invoice");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    try {
+      setLoading(true);
+
+      const res = await sendInvoice(invoice._id);
+
+      if (!res?.data?.success) {
+        throw new Error("Email not sent");
+      }
+
+      onStatusChange();
+    } catch (err) {
+      console.error("Resend failed:", err);
+      alert("Failed to resend invoice email");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleMarkPaid = async () => {
     try {
@@ -97,6 +118,16 @@ const InvoiceHeader = ({ invoice, onStatusChange }) => {
               {loading ? "Sending..." : "Send Invoice"}
             </button>
           </>
+        )}
+        {invoice.status === "sent" && (
+          <button
+            onClick={handleResend}
+            disabled={sending}
+            className="rounded bg-indigo-600 px-3 py-1 text-sm text-white
+               hover:bg-indigo-700 disabled:opacity-60"
+          >
+            {sending ? "Sending..." : "Resend Email"}
+          </button>
         )}
 
         {invoice.status === "sent" && (

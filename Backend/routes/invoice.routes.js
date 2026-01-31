@@ -7,7 +7,8 @@ import {
   updateInvoiceStatus,
   updateInvoice,
   downloadInvoicePdf,
-  sendInvoiceByEmail
+  sendInvoiceByEmail,
+  resendInvoiceEmail,
 } from "../controllers/invoice.controller.js";
 
 const router = express.Router();
@@ -19,5 +20,7 @@ router.patch("/:id/status", protect, updateInvoiceStatus);
 router.put("/:id", protect, updateInvoice);
 router.get("/:id/pdf", protect, downloadInvoicePdf);
 router.post("/:id/send", protect, sendInvoiceByEmail);
+router.post("/:id/resend", protect, resendInvoiceEmail);
+
 
 export default router;
