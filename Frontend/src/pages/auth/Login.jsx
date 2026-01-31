@@ -1,10 +1,10 @@
-import React from "react";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { login as loginApi } from "../../services/auth.services";
 import { useAuth } from "../../context/AuthContext";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
+import AuthLayout from "../../layouts/AuthLayout";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -14,12 +14,12 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    // ---------- VALIDATION ----------
     if (!email.trim() || !password) {
       setError("Email and password are required");
       return;
@@ -32,48 +32,89 @@ const Login = () => {
       login(res.data.data.token);
       navigate("/dashboard");
     } catch (err) {
-      setError(
-        err.response?.data?.message || "Login failed"
-      );
+      setError(err.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-sm border">
-        <h1 className="mb-6 text-2xl font-semibold text-gray-900">
-          Login to Billiant
-        </h1>
-
-        {error && (
-          <p className="mb-4 rounded bg-red-50 p-2 text-sm text-red-600">
-            {error}
+    <AuthLayout>
+      <div>
+        {/* Header */}
+        <div className="mb-8">
+          <h2 className="text-3xl font-semibold text-[#0F172A]">
+            Welcome back
+          </h2>
+          <p className="mt-2 text-sm text-slate-600">
+            Sign in to manage your invoices
           </p>
+        </div>
+
+        {/* Error */}
+        {error && (
+          <div className="mb-6 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
+            {error}
+          </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-5">
           <Input
             label="Email"
             type="email"
+            placeholder="you@company.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
 
-          <Input
-            label="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <div className="relative">
+            <Input
+              label="Password"
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
 
-          <Button type="submit" disabled={loading} className="w-full">
-            {loading ? "Logging in..." : "Login"}
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-4 top-4 text-xs text-slate-500 hover:text-indigo-600"
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
+          </div>
+
+          <Button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl transition-all"
+          >
+            {loading ? "Signing in..." : "Sign in"}
           </Button>
+          <div className="my-8 flex items-center gap-4">
+            <div className="h-px flex-1 bg-slate-200" />
+            <span className="text-xs text-slate-500">Secure login</span>
+            <div className="h-px flex-1 bg-slate-200" />
+          </div>
+
+          <p className="text-center text-xs text-slate-500">
+            🔒 Your data is encrypted and never shared
+          </p>
         </form>
+
+        {/* Footer */}
+        <div className="mt-8 text-center text-sm text-slate-600">
+          Don’t have an account?{" "}
+          <Link
+            to="/register"
+            className="font-medium text-indigo-600 hover:text-indigo-700"
+          >
+            Create one
+          </Link>
+        </div>
       </div>
-    </div>
+    </AuthLayout>
   );
 };
 
