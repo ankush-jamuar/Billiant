@@ -250,44 +250,27 @@ export const updateInvoiceStatus = async (req, res) => {
     const invoice = await Invoice.findOne({
       _id: req.params.id,
       userId: req.user._id,
-    }).populate("clientId");
+    });
 
     if (!invoice) {
-      return res.status(404).json({
-        success: false,
-        message: "Invoice not found",
-      });
+      return res.status(404).json({ success: false });
     }
 
-    // Guards
     if (invoice.status === "paid") {
-      return res.status(400).json({
-        success: false,
-        message: "Paid invoice cannot be changed",
-      });
+      return res.status(400).json({ success: false });
     }
 
     if (invoice.status === "draft" && status === "paid") {
-      return res.status(400).json({
-        success: false,
-        message: "Invoice must be sent before marking paid",
-      });
+      return res.status(400).json({ success: false });
     }
 
-    // ✅ Update status ONLY if email succeeded
     invoice.status = status;
     await invoice.save();
 
-    res.json({
-      success: true,
-      data: invoice,
-    });
+    res.json({ success: true, data: invoice });
   } catch (err) {
-    console.error("Update status failed:", err);
-    res.status(500).json({
-      success: false,
-      message: "Failed to update invoice status",
-    });
+    console.error(err);
+    res.status(500).json({ success: false });
   }
 };
 
@@ -296,46 +279,18 @@ export const updateInvoiceStatus = async (req, res) => {
 ---------------------------------- */
 
 export const downloadInvoicePdf = async (req, res) => {
+  console.log("🔥 HIT: downloadInvoicePdf");
   const invoice = await Invoice.findOne({
     _id: req.params.id,
     userId: req.user._id,
   }).populate("clientId");
 
   if (!invoice) {
-    return res.status(404).json({
-      success: false,
-      message: "Invoice not found",
-    });
+    return res.status(404).json({ success: false });
   }
 
-  // 🔒 Absolute path safety
-  const templatePath = path.join(
-    process.cwd(),
-    "src",
-    "templates",
-    "invoice.template.html",
-  );
-
-  const html = renderInvoiceTemplate({
-    invoiceNumber: invoice.invoiceNumber,
-    clientName: invoice.clientId.name,
-    clientEmail: invoice.clientId.email,
-
-    items: invoice.items,
-
-    subtotal: invoice.subtotal,
-    tax: invoice.tax,
-    taxAmount: invoice.taxAmount, // ✅ NOW GUARANTEED
-    discount: invoice.discount,
-    total: invoice.total,
-  });
-
-  console.log("PDF DATA:", {
-    tax: invoice.tax,
-    taxAmount: invoice.taxAmount,
-  });
-
-  const pdf = await generatePdfFromHtml(html);
+  const pdfHtml = renderInvoicePdf(invoice);
+  const pdf = await generatePdfFromHtml(pdfHtml);
 
   res.set({
     "Content-Type": "application/pdf",
@@ -347,24 +302,23 @@ export const downloadInvoicePdf = async (req, res) => {
 
 export const sendInvoiceByEmail = async (req, res) => {
   try {
-    console.log("🚀 SEND INVOICE ENDPOINT HIT");
-    console.log("🔥 USER:", req.user);
-
     const invoice = await Invoice.findOne({
       _id: req.params.id,
       userId: req.user._id,
     }).populate("clientId");
 
-    console.log("📄 INVOICE:", invoice);
+    if (!invoice) {
+      return res.status(404).json({ success: false });
+    }
 
     // 1️⃣ Generate PDF
     const pdfHtml = renderInvoicePdf(invoice);
-    console.log("📄 PDF HTML GENERATED");
-
     const pdfBuffer = await generatePdfFromHtml(pdfHtml);
-    console.log("📎 PDF BUFFER SIZE:", pdfBuffer?.length);
 
-    // 2️⃣ Generate EMAIL
+    console.log("📄 PDF SIZE:", pdfBuffer.length);
+    console.log("📄 IS BUFFER:", Buffer.isBuffer(pdfBuffer));
+
+    // 2️⃣ Email HTML (summary)
     const emailHtml = renderInvoiceTemplate({
       clientName: invoice.clientId.name,
       invoiceNumber: invoice.invoiceNumber,
@@ -372,25 +326,18 @@ export const sendInvoiceByEmail = async (req, res) => {
       senderName: req.user.name,
       senderEmail: req.user.email,
     });
-    console.log("📧 EMAIL HTML GENERATED");
 
-    // 3️⃣ Send mail
+    // 3️⃣ Send email (CORRECT CONTRACT)
     await sendInvoiceEmail({
       to: invoice.clientId.email,
       replyTo: req.user.email,
       subject: `Invoice ${invoice.invoiceNumber}`,
       html: emailHtml,
-      attachments: [
-        {
-          filename: `${invoice.invoiceNumber}.pdf`,
-          content: pdfBuffer,
-        },
-      ],
+      pdfBuffer, // ✅ REQUIRED
+      filename: `${invoice.invoiceNumber}.pdf`, // ✅ REQUIRED
     });
 
-    console.log("✅ EMAIL SENT");
-
-    // 4️⃣ Update status
+    // 4️⃣ Update status ONLY after success
     if (invoice.status === "draft") {
       invoice.status = "sent";
       await invoice.save();
@@ -401,8 +348,7 @@ export const sendInvoiceByEmail = async (req, res) => {
     console.error("❌ SEND INVOICE FAILED:", err);
     res.status(500).json({
       success: false,
-      message: err.message,
+      message: "Failed to send invoice",
     });
   }
 };
-

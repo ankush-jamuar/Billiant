@@ -2,32 +2,37 @@ import fs from "fs";
 import path from "path";
 
 export const renderInvoicePdf = (invoice) => {
-  const template = fs.readFileSync(
-    path.resolve("templates/invoicePdf.template.html"),
-    "utf-8"
+  const templatePath = path.join(
+    process.cwd(),
+    "templates",
+    "invoicePdf.template.html"
   );
 
-  const itemsHtml = invoice.items.map(
-    (i) => `
-      <tr>
-        <td>${i.description}</td>
-        <td>${i.quantity}</td>
-        <td>₹${i.unitPrice}</td>
-        <td>₹${i.total}</td>
-      </tr>
-    `
-  ).join("");
+  let html = fs.readFileSync(templatePath, "utf-8");
 
-  return template
-    .replace("{{invoiceNumber}}", invoice.invoiceNumber)
-    .replace("{{issueDate}}", new Date(invoice.issueDate).toLocaleDateString())
-    .replace("{{dueDate}}", new Date(invoice.dueDate).toLocaleDateString())
-    .replace("{{clientName}}", invoice.clientId.name)
-    .replace("{{clientEmail}}", invoice.clientId.email)
-    .replace("{{items}}", itemsHtml)
-    .replace("{{subtotal}}", invoice.subtotal)
-    .replace("{{tax}}", invoice.tax)
-    .replace("{{taxAmount}}", invoice.taxAmount)
-    .replace("{{discount}}", invoice.discount)
-    .replace("{{total}}", invoice.total);
+  const itemsHtml = invoice.items
+    .map(
+      (item) => `
+        <tr>
+          <td>${item.description}</td>
+          <td style="text-align:center">${item.quantity}</td>
+          <td style="text-align:right">₹${item.unitPrice}</td>
+          <td style="text-align:right">₹${item.total}</td>
+        </tr>
+      `
+    )
+    .join("");
+
+  html = html
+    .replaceAll("{{invoiceNumber}}", invoice.invoiceNumber)
+    .replaceAll("{{clientName}}", invoice.clientId.name)
+    .replaceAll("{{clientEmail}}", invoice.clientId.email || "-")
+    .replaceAll("{{items}}", itemsHtml)
+    .replaceAll("{{subtotal}}", invoice.subtotal)
+    .replaceAll("{{taxPercent}}", invoice.tax)
+    .replaceAll("{{taxAmount}}", invoice.taxAmount)
+    .replaceAll("{{discount}}", invoice.discount)
+    .replaceAll("{{total}}", invoice.total);
+
+  return html;
 };

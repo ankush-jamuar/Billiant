@@ -20,13 +20,18 @@ export const sendInvoiceEmail = async ({
   html,
   pdfBuffer,
   filename,
+  replyTo,
 }) => {
+  if (!pdfBuffer || !Buffer.isBuffer(pdfBuffer)) {
+    throw new Error("Invalid or missing PDF buffer");
+  }
 
   const transporter = getTransporter();
 
   await transporter.sendMail({
     from: `"Billiant Invoices" <${process.env.EMAIL_USER}>`,
     to,
+    replyTo,
     subject,
     html,
     attachments: [
@@ -37,5 +42,4 @@ export const sendInvoiceEmail = async ({
       },
     ],
   });
-
 };

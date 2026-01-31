@@ -2,21 +2,26 @@ import fs from "fs";
 import path from "path";
 
 export const renderInvoiceTemplate = ({
-  invoiceNumber,
   clientName,
+  invoiceNumber,
   total,
   senderName,
   senderEmail,
 }) => {
-  const template = fs.readFileSync(
-    path.resolve("templates/invoice.template.html"),
-    "utf-8"
+  const templatePath = path.join(
+    process.cwd(),
+    "templates",
+    "invoice.template.html"
   );
 
-  return template
-    .replace("{{invoiceNumber}}", invoiceNumber)
-    .replace("{{clientName}}", clientName)
-    .replace("{{total}}", total)
-    .replace("{{senderName}}", senderName)
-    .replace("{{senderEmail}}", senderEmail);
+  let html = fs.readFileSync(templatePath, "utf-8");
+
+  html = html
+    .replaceAll("{{clientName}}", clientName)
+    .replaceAll("{{invoiceNumber}}", invoiceNumber)
+    .replaceAll("{{total}}", total)
+    .replaceAll("{{senderName}}", senderName)
+    .replaceAll("{{senderEmail}}", senderEmail);
+
+  return html;
 };

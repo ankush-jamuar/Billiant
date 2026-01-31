@@ -11,7 +11,7 @@ export const generatePdfFromHtml = async (html) => {
     waitUntil: "networkidle0",
   });
 
-  const pdfBuffer = await page.pdf({
+  const pdfUint8Array = await page.pdf({
     format: "A4",
     printBackground: true,
     margin: {
@@ -23,5 +23,6 @@ export const generatePdfFromHtml = async (html) => {
   });
 
   await browser.close();
-  return pdfBuffer;
+
+  return Buffer.from(pdfUint8Array);
 };
