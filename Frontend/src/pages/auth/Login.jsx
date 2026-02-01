@@ -5,6 +5,8 @@ import { useAuth } from "../../context/AuthContext";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
 import AuthLayout from "../../layouts/AuthLayout";
+import { Eye, EyeOff } from "lucide-react";
+import toast from "react-hot-toast";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -30,9 +32,11 @@ const Login = () => {
     try {
       const res = await loginApi({ email, password });
       login(res.data.data.token);
+
+      toast.success("Welcome back 👋");
       navigate("/dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
+      toast.error(err.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -79,9 +83,14 @@ const Login = () => {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-4 text-xs text-slate-500 hover:text-indigo-600"
+              className="
+      absolute right-4 top-4
+      text-slate-400 hover:text-indigo-600
+      transition-colors
+    "
+              aria-label="Toggle password visibility"
             >
-              {showPassword ? "Hide" : "Show"}
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
 
@@ -92,14 +101,16 @@ const Login = () => {
           >
             {loading ? "Signing in..." : "Sign in"}
           </Button>
-          <div className="my-8 flex items-center gap-4">
-            <div className="h-px flex-1 bg-slate-200" />
-            <span className="text-xs text-slate-500">Secure login</span>
-            <div className="h-px flex-1 bg-slate-200" />
+          <div className="my-2 flex items-center gap-3">
+            <div className="h-px flex-1 bg-slate-200/70" />
+            <span className="text-[11px] uppercase tracking-wide text-slate-400">
+              Secure
+            </span>
+            <div className="h-px flex-1 bg-slate-200/70" />
           </div>
 
-          <p className="text-center text-xs text-slate-500">
-            🔒 Your data is encrypted and never shared
+          <p className="text-center text-[11px] text-slate-500">
+            🔒 Encrypted & secure authentication
           </p>
         </form>
 
