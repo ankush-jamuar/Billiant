@@ -1,61 +1,104 @@
-import React from 'react'
 import { useEffect, useState } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { verifyEmail } from "../../services/auth.services";
+import AuthLayout from "../../layouts/AuthLayout";
+import Button from "../../components/ui/Button";
+import toast from "react-hot-toast";
+import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 
 const VerifyEmail = () => {
-    const [searchParams] = useSearchParams();
-  const token = searchParams.get("token");
+  const [params] = useSearchParams();
+  const navigate = useNavigate();
 
-  const [status, setStatus] = useState("loading");
+  const token = params.get("token");
+
+  const [loading, setLoading] = useState(true);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
+    if (!token) {
+      setError("Invalid verification link");
+      setLoading(false);
+      return;
+    }
+
     const verify = async () => {
       try {
-        await api.get(`/api/auth/verify-email?token=${token}`);
-        setStatus("success");
-      } catch {
-        setStatus("error");
+        await verifyEmail(token);
+        setSuccess(true);
+        toast.success("Email verified successfully 🎉");
+
+        // Auto redirect
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 2500);
+      } catch (err) {
+        setError(
+          err.response?.data?.message ||
+            "Verification link is invalid or expired"
+        );
+      } finally {
+        setLoading(false);
       }
     };
 
-    if (token) verify();
-    else setStatus("error");
-  }, [token]);
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="max-w-md bg-white p-6 rounded-xl border text-center">
-        {status === "loading" && <p>Verifying email...</p>}
+    verify();
+  }, [token, navigate]);
 
-        {status === "success" && (
-          <>
-            <h1 className="text-xl font-semibold mb-2">
-              Email Verified 🎉
-            </h1>
-            <p className="mb-4 text-gray-600">
-              Your email has been verified successfully.
+  return (
+    <AuthLayout>
+      <div className="text-center">
+        {/* Loading */}
+        {loading && (
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="h-10 w-10 animate-spin text-indigo-600" />
+            <p className="text-sm text-slate-600">
+              Verifying your email address…
             </p>
-            <Link
-              to="/dashboard"
-              className="text-blue-600 hover:underline"
-            >
-              Go to Dashboard
-            </Link>
-          </>
+          </div>
         )}
 
-        {status === "error" && (
-          <>
-            <h1 className="text-xl font-semibold mb-2 text-red-600">
-              Verification Failed
-            </h1>
-            <p className="text-gray-600">
-              Invalid or expired verification link.
+        {/* Success */}
+        {!loading && success && (
+          <div className="flex flex-col items-center gap-4">
+            <CheckCircle className="h-12 w-12 text-green-600" />
+            <h2 className="text-2xl font-semibold text-slate-900">
+              Email verified
+            </h2>
+            <p className="text-sm text-slate-600">
+              Redirecting you to dashboard…
             </p>
-          </>
+          </div>
+        )}
+
+        {/* Error */}
+        {!loading && error && (
+          <div className="flex flex-col items-center gap-4">
+            <XCircle className="h-12 w-12 text-red-500" />
+            <h2 className="text-xl font-semibold text-slate-900">
+              Verification failed
+            </h2>
+            <p className="text-sm text-slate-600">{error}</p>
+
+            <Button
+              disabled
+              className="mt-4 rounded-xl px-6 py-2 opacity-60"
+            >
+              Resend verification (coming soon)
+            </Button>
+
+            <button
+              onClick={() => navigate("/login")}
+              className="mt-2 text-sm text-indigo-600 hover:underline"
+            >
+              Back to login
+            </button>
+          </div>
         )}
       </div>
-    </div>
-  )
-}
+    </AuthLayout>
+  );
+};
 
-export default VerifyEmail
+export default VerifyEmail;
