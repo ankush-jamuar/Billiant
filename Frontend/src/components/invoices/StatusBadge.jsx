@@ -1,15 +1,35 @@
 const STATUS_STYLES = {
-  draft: "bg-gray-100 text-gray-700",
-  sent: "bg-blue-100 text-blue-700",
-  paid: "bg-green-100 text-green-700",
+  draft: {
+    label: "Draft",
+    className:
+      "bg-slate-100 text-slate-700 border border-slate-200",
+  },
+  sent: {
+    label: "Sent",
+    className:
+      "bg-indigo-50 text-indigo-700 border border-indigo-100",
+  },
+  paid: {
+    label: "Paid",
+    className:
+      "bg-emerald-50 text-emerald-700 border border-emerald-100",
+  },
 };
 
-const StatusBadge = ({ status }) => {
+const StatusBadge = ({ status = "draft" }) => {
+  const config = STATUS_STYLES[status] || STATUS_STYLES.draft;
+
   return (
     <span
-      className={`rounded px-2 py-1 text-xs font-medium ${STATUS_STYLES[status]}`}
+      className={`
+        inline-flex items-center justify-center
+        rounded-full px-3 py-1
+        text-xs font-medium
+        whitespace-nowrap
+        ${config.className}
+      `}
     >
-      {status.toUpperCase()}
+      {config.label}
     </span>
   );
 };
