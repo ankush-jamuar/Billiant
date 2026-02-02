@@ -3,7 +3,7 @@ import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
 import AuthLayout from "../../layouts/AuthLayout";
 import toast from "react-hot-toast";
-import api from "../../services/api";
+import { forgotPassword } from "../../services/auth.services";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -11,11 +11,12 @@ const ForgotPassword = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("🔥 Forgot password submit clicked");
     if (!email) return toast.error("Email required");
 
     try {
       setLoading(true);
-      await api.post("/api/auth/forgot-password", { email });
+      await forgotPassword( email );
       toast.success("Reset link sent if account exists");
     } catch {
       toast.error("Something went wrong");
@@ -41,7 +42,7 @@ const ForgotPassword = () => {
             onChange={(e) => setEmail(e.target.value)}
           />
 
-          <Button className="w-full" disabled={loading}>
+          <Button className="w-full" disabled={loading} type="submit">
             {loading ? "Sending..." : "Send reset link"}
           </Button>
         </form>

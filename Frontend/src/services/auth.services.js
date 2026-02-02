@@ -15,3 +15,11 @@ export const verifyEmail = (token) => {
 export const resendVerification = () => {
   return api.post("/api/auth/resend-verification-email");
 };
+
+export const forgotPassword = (email) => {
+  return api.post("/api/auth/forgot-password", { email });
+}
+
+export const resetPassword = ({ token, password }) => {
+  return api.post("/api/auth/reset-password", { token, password });
+}

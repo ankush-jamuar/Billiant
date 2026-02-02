@@ -10,14 +10,12 @@ const Dashboard = () => {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  console.log("DASHBOARD USER:", user);
 
   useEffect(() => {
     const loadDashboard = async () => {
       try {
         console.log("Calling dashboard API...");
         const res = await getDashboardSummary();
-        console.log("Dashboard API response:", res.data);
         setSummary(res.data.data);
       } catch (err) {
         console.error("Dashboard API failed:", err);

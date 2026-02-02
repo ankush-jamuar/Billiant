@@ -229,7 +229,7 @@ export const forgotPassword = async (req, res) => {
 
   const user = await User.findOne({ email });
 
-  // 🔒 Security: always return success
+  // 🔒 Security: don't reveal user existence
   if (!user) {
     return res.json({
       success: true,
@@ -237,17 +237,25 @@ export const forgotPassword = async (req, res) => {
     });
   }
 
-  const resetToken = generateResetToken();
+  const rawToken = generateResetToken();
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(rawToken)
+    .digest("hex");
 
-  user.passwordResetToken = resetToken;
-  user.passwordResetTokenExpires = Date.now() + 15 * 60 * 1000; // 15 mins
+  // ✅ CORRECT FIELD NAMES
+  user.resetPasswordToken = hashedToken;
+  user.resetPasswordExpires = Date.now() + 15 * 60 * 1000; // 15 mins
 
   await user.save();
 
-  const resetLink = `http://localhost:5173/reset-password?token=${resetToken}`;
+  const resetLink = `http://localhost:5173/reset-password?token=${rawToken}`;
 
-  // TEMP: log instead of sending mail
+  // TEMP (replace with email later)
   console.log("🔐 Reset password link:", resetLink);
+  console.log("RESET TOKEN (RAW):", rawToken);
+  console.log("RESET TOKEN (HASHED):", hashedToken);
+  console.log("EXPIRES AT:", user.resetPasswordExpires);
 
   res.json({
     success: true,
@@ -269,10 +277,19 @@ export const resetPassword = async (req, res) => {
     });
   }
 
+  console.log("RAW TOKEN:", token);
+
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  console.log("HASHED TOKEN:", hashedToken);
+  console.log("NOW:", Date.now());
+
   const user = await User.findOne({
-    passwordResetToken: token,
-    passwordResetTokenExpires: { $gt: Date.now() },
+    resetPasswordToken: hashedToken,
+    resetPasswordExpires: { $gt: Date.now() },
   });
+
+  console.log("USER FOUND:", user);
 
   if (!user) {
     return res.status(400).json({
@@ -282,8 +299,8 @@ export const resetPassword = async (req, res) => {
   }
 
   user.password = await bcrypt.hash(password, 10);
-  user.passwordResetToken = undefined;
-  user.passwordResetTokenExpires = undefined;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpires = undefined;
 
   await user.save();
 

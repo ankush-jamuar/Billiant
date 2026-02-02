@@ -4,7 +4,7 @@ import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
 import AuthLayout from "../../layouts/AuthLayout";
 import toast from "react-hot-toast";
-import api from "../../services/api";
+import { resetPassword } from "../../services/auth.services";
 
 const ResetPassword = () => {
   const [params] = useSearchParams();
@@ -20,7 +20,7 @@ const ResetPassword = () => {
 
     try {
       setLoading(true);
-      await api.post("/api/auth/reset-password", { token, password });
+      await resetPassword({ token, password });
       toast.success("Password reset successful");
       navigate("/login");
     } catch {
@@ -43,7 +43,7 @@ const ResetPassword = () => {
             onChange={(e) => setPassword(e.target.value)}
           />
 
-          <Button className="w-full" disabled={loading}>
+          <Button className="w-full" disabled={loading} type="submit">
             {loading ? "Updating..." : "Reset password"}
           </Button>
         </form>
