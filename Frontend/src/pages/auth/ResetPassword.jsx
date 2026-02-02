@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import AuthLayout from "../../layouts/AuthLayout";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
+import AuthLayout from "../../layouts/AuthLayout";
 import toast from "react-hot-toast";
 import api from "../../services/api";
 
@@ -16,13 +16,11 @@ const ResetPassword = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    if (!password) return toast.error("Password required");
 
     try {
-      await api.post(`/api/auth/reset-password?token=${token}`, {
-        password,
-      });
-
+      setLoading(true);
+      await api.post("/api/auth/reset-password", { token, password });
       toast.success("Password reset successful");
       navigate("/login");
     } catch {
@@ -35,21 +33,18 @@ const ResetPassword = () => {
   return (
     <AuthLayout>
       <div>
-        <h2 className="mb-2 text-3xl font-semibold">Reset password</h2>
-        <p className="mb-6 text-sm text-slate-600">
-          Enter your new password
-        </p>
+        <h2 className="text-3xl font-semibold">Reset password</h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <Input
-            label="New Password"
+            label="New password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
 
-          <Button loading={loading} className="w-full">
-            Reset password
+          <Button className="w-full" disabled={loading}>
+            {loading ? "Updating..." : "Reset password"}
           </Button>
         </form>
       </div>

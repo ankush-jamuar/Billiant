@@ -18,6 +18,8 @@ const generateEmailToken = () => {
   return { raw, hashed };
 };
 
+const generateResetToken = () => crypto.randomBytes(32).toString("hex");
+
 /* -------------------------
    REGISTER
 -------------------------- */
@@ -56,7 +58,7 @@ export const register = async (req, res) => {
 
     // 🔔 TEMP: console email link (Phase 12.3 UI later)
     console.log(
-      `📧 Verify email: http://localhost:5173/verify-email?token=${raw}`
+      `📧 Verify email: http://localhost:5173/verify-email?token=${raw}`,
     );
 
     const token = generateToken(user._id);
@@ -134,10 +136,7 @@ export const verifyEmail = async (req, res) => {
       });
     }
 
-    const hashedToken = crypto
-      .createHash("sha256")
-      .update(token)
-      .digest("hex");
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
     const user = await User.findOne({
       emailVerificationToken: hashedToken,
@@ -192,14 +191,13 @@ export const resendVerification = async (req, res) => {
     const verificationToken = crypto.randomBytes(32).toString("hex");
 
     user.emailVerificationToken = verificationToken;
-    user.emailVerificationTokenExpires =
-      Date.now() + 7 * 24 * 60 * 60 * 1000;
+    user.emailVerificationTokenExpires = Date.now() + 7 * 24 * 60 * 60 * 1000;
 
     await user.save();
 
     // TEMP (console) – later replace with email
     console.log(
-      `Verify email link: http://localhost:5173/verify-email?token=${verificationToken}`
+      `Verify email link: http://localhost:5173/verify-email?token=${verificationToken}`,
     );
 
     res.json({
@@ -215,7 +213,6 @@ export const resendVerification = async (req, res) => {
   }
 };
 
-
 /* -------------------------
    FORGOT PASSWORD
 -------------------------- */
@@ -223,29 +220,38 @@ export const resendVerification = async (req, res) => {
 export const forgotPassword = async (req, res) => {
   const { email } = req.body;
 
-  const user = await User.findOne({ email });
-
-  // Always return success (security best practice)
-  if (!user) {
-    return res.json({
-      success: true,
-      message: "If the email exists, a reset link was sent",
+  if (!email) {
+    return res.status(400).json({
+      success: false,
+      message: "Email is required",
     });
   }
 
-  const token = crypto.randomBytes(32).toString("hex");
+  const user = await User.findOne({ email });
 
-  user.resetPasswordToken = token;
-  user.resetPasswordExpires = Date.now() + 60 * 60 * 1000; // 1 hour
+  // 🔒 Security: always return success
+  if (!user) {
+    return res.json({
+      success: true,
+      message: "If an account exists, a reset link has been sent",
+    });
+  }
+
+  const resetToken = generateResetToken();
+
+  user.passwordResetToken = resetToken;
+  user.passwordResetTokenExpires = Date.now() + 15 * 60 * 1000; // 15 mins
+
   await user.save();
 
-  const resetUrl = `http://localhost:5173/reset-password?token=${token}`;
+  const resetLink = `http://localhost:5173/reset-password?token=${resetToken}`;
 
-  console.log("🔐 RESET LINK:", resetUrl); // TEMP (email later)
+  // TEMP: log instead of sending mail
+  console.log("🔐 Reset password link:", resetLink);
 
   res.json({
     success: true,
-    message: "If the email exists, a reset link was sent",
+    message: "Password reset link sent",
   });
 };
 
@@ -254,31 +260,35 @@ export const forgotPassword = async (req, res) => {
 -------------------------- */
 
 export const resetPassword = async (req, res) => {
-  const { token } = req.query;
-  const { password } = req.body;
+  const { token, password } = req.body;
+
+  if (!token || !password) {
+    return res.status(400).json({
+      success: false,
+      message: "Token and password are required",
+    });
+  }
 
   const user = await User.findOne({
-    resetPasswordToken: token,
-    resetPasswordExpires: { $gt: Date.now() },
+    passwordResetToken: token,
+    passwordResetTokenExpires: { $gt: Date.now() },
   });
 
   if (!user) {
     return res.status(400).json({
       success: false,
-      message: "Invalid or expired reset link",
+      message: "Invalid or expired reset token",
     });
   }
 
-  const hashed = await bcrypt.hash(password, 10);
-
-  user.password = hashed;
-  user.resetPasswordToken = undefined;
-  user.resetPasswordExpires = undefined;
+  user.password = await bcrypt.hash(password, 10);
+  user.passwordResetToken = undefined;
+  user.passwordResetTokenExpires = undefined;
 
   await user.save();
 
   res.json({
     success: true,
-    message: "Password reset successfully",
+    message: "Password reset successful",
   });
 };
