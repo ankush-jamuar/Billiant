@@ -12,7 +12,7 @@ import InvoiceDetails from "../pages/invoices/InvoiceDetails";
 import EditInvoice from "../pages/invoices/EditInvoice";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 import ResetPassword from "../pages/auth/ResetPassword";
-import Settings from "../pages/settings/Settings";
+import Settings from "../pages/settings/Setting";
 
 const AppRoutes = () => {
   return (
@@ -36,7 +36,7 @@ const AppRoutes = () => {
         <Route path="/invoices/new/" element={<NewInvoice />} />
         <Route path="/invoices/:id" element={<InvoiceDetails />} />
         <Route path="/invoices/:id/edit" element={<EditInvoice />} />
-        <Route path="/profile" element={<Settings />} />
+        <Route path="/settings" element={<Settings />} />
       </Route>
     </Routes>
   );

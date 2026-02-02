@@ -1,22 +1,28 @@
-import React from 'react'
-import { Outlet } from 'react-router-dom'
-import Sidebar from '../components/layout/Sidebar'
-import Topbar from '../components/layout/Topbar'
+import { Outlet } from "react-router-dom";
+import Sidebar from "../components/layout/Sidebar";
+import Topbar from "../components/layout/Topbar";
+import PageContainer from "../components/layout/PageContainer";
 
 const AppLayout = () => {
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex h-screen bg-slate-100">
+      {/* Sidebar */}
       <Sidebar />
 
-      <div className="flex flex-1 flex-col">
+      {/* Main area */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Topbar */}
         <Topbar />
 
-        <main className="flex-1 p-6">
-          <Outlet />
+        {/* Scroll area */}
+        <main className="flex-1 overflow-y-auto">
+          <PageContainer>
+            <Outlet />
+          </PageContainer>
         </main>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default AppLayout
+export default AppLayout;

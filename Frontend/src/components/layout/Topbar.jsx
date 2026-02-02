@@ -19,7 +19,7 @@ const Topbar = () => {
 
   return (
     <div className="h-14 border-b bg-white px-6 flex items-center justify-between">
-      <h1 className="text-lg font-medium">
+      <h1 className="text-xl font-semibold text-slate-900">
         {currentPage.title}
       </h1>
 

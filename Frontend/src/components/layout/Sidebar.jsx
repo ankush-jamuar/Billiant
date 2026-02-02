@@ -37,6 +37,14 @@ const Sidebar = () => {
         >
           Invoices
         </NavLink>
+        <NavLink
+          to="/settings"
+          className={({ isActive }) =>
+            `${linkClass} ${isActive ? activeClass : ""}`
+          }
+        >
+          Settings
+        </NavLink>
       </nav>
     </aside>
   );
