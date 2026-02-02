@@ -1,33 +1,91 @@
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
+  PieChart,
+  Pie,
+  Cell,
   ResponsiveContainer,
 } from "recharts";
 
-const StatusChart = ({ data }) => {
-  if (!data) return null;
+const COLORS = {
+  draft: "#CBD5E1", // slate-300
+  sent: "#6366F1",  // indigo-500
+  paid: "#22C55E",  // green-500
+};
 
-  const chartData = [
-    { name: "Draft", value: data.draft },
-    { name: "Sent", value: data.sent },
-    { name: "Paid", value: data.paid },
-  ];
+const StatusChart = ({ data }) => {
+  // ✅ Normalize object → array
+  const chartData = data
+    ? Object.entries(data).map(([status, count]) => ({
+        status,
+        count,
+      }))
+    : [];
+
+  if (chartData.length === 0) {
+    return (
+      <div className="rounded-xl bg-white border border-slate-200 shadow-sm p-6 text-sm text-slate-500">
+        No invoice data
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-white p-4 rounded shadow">
-      <h3 className="font-medium mb-4">Invoice Status</h3>
+    <div className="h-full rounded-xl bg-white border border-slate-200 shadow-sm flex flex-col">
+      {/* Header */}
+      <div className="px-5 py-4 border-b border-slate-100 min-h-[64px]">
+        <h3 className="text-base font-semibold text-slate-900">
+          Invoice Status
+        </h3>
+        <p className="mt-1 text-sm text-slate-500">
+          Distribution by status
+        </p>
+      </div>
 
-      <ResponsiveContainer width="100%" height={250}>
-        <BarChart data={chartData}>
-          <XAxis dataKey="name" />
-          <YAxis allowDecimals={false} />
-          <Tooltip />
-          <Bar dataKey="value" />
-        </BarChart>
-      </ResponsiveContainer>
+      {/* Chart */}
+      <div className="h-56 p-4">
+        <ResponsiveContainer>
+          <PieChart>
+            <Pie
+              data={chartData}
+              dataKey="count"
+              nameKey="status"
+              innerRadius={50}
+              outerRadius={80}
+              paddingAngle={3}
+            >
+              {chartData.map((entry) => (
+                <Cell
+                  key={entry.status}
+                  fill={COLORS[entry.status]}
+                />
+              ))}
+            </Pie>
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Legend */}
+      <div className="px-6 pb-5 space-y-2 text-sm">
+        {chartData.map((item) => (
+          <div
+            key={item.status}
+            className="flex items-center justify-between"
+          >
+            <div className="flex items-center gap-2">
+              <span
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: COLORS[item.status] }}
+              />
+              <span className="capitalize text-slate-700">
+                {item.status}
+              </span>
+            </div>
+
+            <span className="font-medium text-slate-900">
+              {item.count}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

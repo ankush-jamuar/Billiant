@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import MetricCard from "../../components/dashboard/MetricCard";
 import RecentInvoices from "../../components/dashboard/RecentInvoices";
-import StatusChart from "../../components/dashboard//StatusChart";
+import StatusChart from "../../components/dashboard/StatusChart";
 import { getDashboardSummary } from "../../services/dashboard.services";
 import { useAuth } from "../../context/AuthContext";
 import EmailVerificationBanner from "../../components/common/EmailVerificationBanner";
+import DashboardEmptyState from "../../components/dashboard/DashboardEmptyState";
 
 const Dashboard = () => {
   const [summary, setSummary] = useState(null);
@@ -14,7 +15,6 @@ const Dashboard = () => {
   useEffect(() => {
     const loadDashboard = async () => {
       try {
-        console.log("Calling dashboard API...");
         const res = await getDashboardSummary();
         setSummary(res.data.data);
       } catch (err) {
@@ -27,30 +27,53 @@ const Dashboard = () => {
     loadDashboard();
   }, []);
 
-  if (loading) return <p>Loading dashboard...</p>;
-  if (!summary) return <p>Failed to load dashboard.</p>;
+  if (loading) return <p className="text-sm text-slate-500">Loading dashboard…</p>;
+  if (!summary) return <p className="text-sm text-red-500">Failed to load dashboard.</p>;
+  if (summary.recentInvoices.length === 0) {
+    return (
+      <div className="space-y-6">
+        <EmailVerificationBanner user={user} />
+        <DashboardEmptyState />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Dashboard</h1>
+      {/* 🔔 Email verification */}
       <EmailVerificationBanner user={user} />
 
-      {/* Metrics */}
-      <div className="grid grid-cols-4 gap-4">
-        <MetricCard title="Total Revenue" value={`₹${summary.totalRevenue}`} />
-        <MetricCard title="Outstanding" value={`₹${summary.outstanding}`} />
-        <MetricCard title="Draft Invoices" value={summary.draftCount} />
-        <MetricCard title="Overdue" value={summary.overdueCount} />
+      {/* 📊 Metrics */}
+      <div className="grid grid-cols-4 gap-6">
+        <MetricCard
+          title="Total Revenue"
+          value={`₹${summary.totalRevenue}`}
+        />
+        <MetricCard
+          title="Outstanding"
+          value={`₹${summary.outstanding}`}
+        />
+        <MetricCard
+          title="Draft Invoices"
+          value={summary.draftCount}
+        />
+        <MetricCard
+          title="Overdue"
+          value={summary.overdueCount}
+        />
       </div>
 
-      {/* Main content */}
-      <div className="grid grid-cols-3 gap-6">
-        <div className="col-span-2">
+      {/* 📈 Main content */}
+      <div className="grid grid-cols-3 gap-6 items-stretch">
+        <div className="col-span-2 h-full">
           <RecentInvoices invoices={summary.recentInvoices} />
         </div>
 
-        <StatusChart data={summary.statusBreakdown} />
+        <div className="h-full">
+          <StatusChart data={summary.statusBreakdown} />
+        </div>
       </div>
+
     </div>
   );
 };
