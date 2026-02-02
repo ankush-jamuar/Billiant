@@ -93,6 +93,14 @@ const Login = () => {
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
+          <div className="flex justify-end">
+            <Link
+              to="/forgot-password"
+              className="text-sm font-medium text-indigo-600 hover:text-indigo-700"
+            >
+              Forgot password?
+            </Link>
+          </div>
 
           <Button
             type="submit"

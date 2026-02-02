@@ -5,4 +5,5 @@ export const PAGE_TITLES = [
   { path: "/invoices/new", title: "New Invoice" },
   { path: "/invoices/:id", title: "Invoice Details" },
   { path: "/invoices/:id/edit", title: "Edit Invoice" },
+  { path: "/profile", title: "Profile" },
 ];
