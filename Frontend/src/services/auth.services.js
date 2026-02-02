@@ -13,5 +13,5 @@ export const verifyEmail = (token) => {
 };
 
 export const resendVerification = () => {
-  return api.post("/api/auth/resend-verification");
+  return api.post("/api/auth/resend-verification-email");
 };

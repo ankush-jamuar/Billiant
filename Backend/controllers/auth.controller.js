@@ -174,9 +174,13 @@ export const verifyEmail = async (req, res) => {
    RESEND EMAIL
 -------------------------- */
 
-export const resendVerificationEmail = async (req, res) => {
+export const resendVerification = async (req, res) => {
   try {
-    const user = req.user;
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ success: false });
+    }
 
     if (user.isEmailVerified) {
       return res.status(400).json({
@@ -189,13 +193,13 @@ export const resendVerificationEmail = async (req, res) => {
 
     user.emailVerificationToken = verificationToken;
     user.emailVerificationTokenExpires =
-      Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days
+      Date.now() + 7 * 24 * 60 * 60 * 1000;
 
     await user.save();
 
-    // 🔔 TEMP (console email – we’ll switch to real mail later)
+    // TEMP (console) – later replace with email
     console.log(
-      `🔁 Resend verify email: http://localhost:5173/verify-email?token=${verificationToken}`
+      `Verify email link: http://localhost:5173/verify-email?token=${verificationToken}`
     );
 
     res.json({
@@ -209,4 +213,72 @@ export const resendVerificationEmail = async (req, res) => {
       message: "Failed to resend verification email",
     });
   }
+};
+
+
+/* -------------------------
+   FORGOT PASSWORD
+-------------------------- */
+
+export const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+
+  // Always return success (security best practice)
+  if (!user) {
+    return res.json({
+      success: true,
+      message: "If the email exists, a reset link was sent",
+    });
+  }
+
+  const token = crypto.randomBytes(32).toString("hex");
+
+  user.resetPasswordToken = token;
+  user.resetPasswordExpires = Date.now() + 60 * 60 * 1000; // 1 hour
+  await user.save();
+
+  const resetUrl = `http://localhost:5173/reset-password?token=${token}`;
+
+  console.log("🔐 RESET LINK:", resetUrl); // TEMP (email later)
+
+  res.json({
+    success: true,
+    message: "If the email exists, a reset link was sent",
+  });
+};
+
+/* -------------------------
+   RESET PASSWORD
+-------------------------- */
+
+export const resetPassword = async (req, res) => {
+  const { token } = req.query;
+  const { password } = req.body;
+
+  const user = await User.findOne({
+    resetPasswordToken: token,
+    resetPasswordExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid or expired reset link",
+    });
+  }
+
+  const hashed = await bcrypt.hash(password, 10);
+
+  user.password = hashed;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpires = undefined;
+
+  await user.save();
+
+  res.json({
+    success: true,
+    message: "Password reset successfully",
+  });
 };

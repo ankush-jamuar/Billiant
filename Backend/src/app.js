@@ -16,5 +16,6 @@ app.use("/api/clients", clientRoutes);
 app.use("/api/invoices", invoiceRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/dev", devRoutes);
+console.log("🔥 REGISTERED ROUTES:");
 
 export default app;

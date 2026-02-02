@@ -10,6 +10,8 @@ import Invoices from "../pages/invoices/Invoices";
 import NewInvoice from "../pages/invoices/NewInvoice";
 import InvoiceDetails from "../pages/invoices/InvoiceDetails";
 import EditInvoice from "../pages/invoices/EditInvoice";
+import ForgotPassword from "../pages/auth/ForgotPassword";
+import ResetPassword from "../pages/auth/ResetPassword";
 
 const AppRoutes = () => {
   return (
@@ -17,6 +19,8 @@ const AppRoutes = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       <Route
         element={
@@ -28,9 +32,9 @@ const AppRoutes = () => {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/clients" element={<Clients />} />
         <Route path="/invoices" element={<Invoices />} />
-        <Route path="/invoices/new/" element={<NewInvoice />}/>
-        <Route path="/invoices/:id" element={<InvoiceDetails />}/>
-        <Route path="/invoices/:id/edit" element={<EditInvoice />}/>
+        <Route path="/invoices/new/" element={<NewInvoice />} />
+        <Route path="/invoices/:id" element={<InvoiceDetails />} />
+        <Route path="/invoices/:id/edit" element={<EditInvoice />} />
       </Route>
     </Routes>
   );
