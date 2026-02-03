@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import StatusBadge from "./StatusBadge";
 import {
   updateInvoiceStatus,
@@ -18,7 +19,7 @@ const InvoiceHeader = ({ invoice, onStatusChange }) => {
       const pdfBlob = await downloadInvoicePdf(invoice._id);
 
       const url = window.URL.createObjectURL(
-        new Blob([pdfBlob], { type: "application/pdf" }),
+        new Blob([pdfBlob], { type: "application/pdf" })
       );
 
       const link = document.createElement("a");
@@ -30,38 +31,35 @@ const InvoiceHeader = ({ invoice, onStatusChange }) => {
 
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      alert("Failed to download PDF");
+      toast.error("Failed to download PDF");
     }
   };
 
   const handleSend = async () => {
     try {
-      setLoading(true);
-      await sendInvoice(invoice._id); // 🔥 THIS
-      onStatusChange(); // refresh invoice
+      setSending(true);
+      await sendInvoice(invoice._id);
+
+      toast.success("Invoice sent successfully");
+      onStatusChange(); // ✅ REQUIRED here
     } catch (err) {
-      alert("Failed to send invoice");
+      toast.error("Failed to send invoice");
     } finally {
-      setLoading(false);
+      setSending(false);
     }
   };
 
   const handleResend = async () => {
     try {
-      setLoading(true);
+      setSending(true);
+      await resendInvoice(invoice._id);
 
-      const res = await sendInvoice(invoice._id);
-
-      if (!res?.data?.success) {
-        throw new Error("Email not sent");
-      }
-
-      onStatusChange();
+      toast.success("Invoice email resent");
     } catch (err) {
       console.error("Resend failed:", err);
-      alert("Failed to resend invoice email");
+      toast.error("Failed to resend invoice email");
     } finally {
-      setLoading(false);
+      setSending(false);
     }
   };
 
@@ -69,31 +67,24 @@ const InvoiceHeader = ({ invoice, onStatusChange }) => {
     try {
       setLoading(true);
       await updateInvoiceStatus(invoice._id, "paid");
-
-      // ✅ defensive call
-      onStatusChange?.();
+      toast.success("Invoice marked as paid");
+      onStatusChange();
     } catch (err) {
-      console.error("Mark paid failed", err);
-      alert("Failed to mark invoice as paid");
+      toast.error("Failed to mark invoice as paid");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex items-start justify-between rounded bg-white p-6 shadow-sm">
+    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm flex items-start justify-between">
       {/* LEFT */}
       <div>
-        <h1 className="text-2xl font-semibold">
+        <h1 className="text-2xl font-semibold text-slate-900">
           Invoice {invoice.invoiceNumber}
         </h1>
-
-        <p className="mt-1 text-sm text-gray-600">
+        <p className="mt-1 text-sm text-slate-600">
           Client: {invoice.clientId?.name}
-        </p>
-
-        <p className="text-sm text-gray-600">
-          Due: {new Date(invoice.dueDate).toLocaleDateString("en-IN")}
         </p>
       </div>
 
@@ -105,49 +96,51 @@ const InvoiceHeader = ({ invoice, onStatusChange }) => {
           <>
             <button
               onClick={() => navigate(`/invoices/${invoice._id}/edit`)}
-              className="rounded bg-gray-200 px-3 py-1 text-sm text-gray-800 hover:bg-gray-300"
+              className="rounded-lg bg-slate-100 px-3 py-1 text-sm hover:bg-slate-200"
             >
               Edit
             </button>
 
             <button
               onClick={handleSend}
-              disabled={loading}
-              className="rounded bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700 disabled:opacity-60"
+              disabled={sending}
+              className="rounded-lg bg-indigo-600 px-3 py-1 text-sm text-white hover:bg-indigo-700 disabled:opacity-60"
             >
-              {loading ? "Sending..." : "Send Invoice"}
+              {sending ? "Sending…" : "Send Invoice"}
             </button>
           </>
         )}
-        {invoice.status === "sent" && (
-          <button
-            onClick={handleResend}
-            disabled={sending}
-            className="rounded bg-indigo-600 px-3 py-1 text-sm text-white
-               hover:bg-indigo-700 disabled:opacity-60"
-          >
-            {sending ? "Sending..." : "Resend Email"}
-          </button>
-        )}
 
         {invoice.status === "sent" && (
-          <button
-            onClick={handleMarkPaid}
-            disabled={loading}
-            className="rounded bg-green-600 px-3 py-1 text-sm text-white hover:bg-green-700 disabled:opacity-60"
-          >
-            {loading ? "Updating..." : "Mark as Paid"}
-          </button>
+          <>
+            <button
+              onClick={handleResend}
+              disabled={sending}
+              className="rounded-lg bg-indigo-600 px-3 py-1 text-sm text-white hover:bg-indigo-700 disabled:opacity-60"
+            >
+              {sending ? "Resending…" : "Resend Email"}
+            </button>
+
+            <button
+              onClick={handleMarkPaid}
+              disabled={loading}
+              className="rounded-lg bg-green-600 px-3 py-1 text-sm text-white hover:bg-green-700 disabled:opacity-60"
+            >
+              {loading ? "Updating…" : "Mark as Paid"}
+            </button>
+          </>
         )}
+
         {invoice.status !== "draft" && (
           <button
             onClick={handleDownloadPdf}
-            className="rounded bg-gray-100 px-3 py-1 text-sm text-gray-800 hover:bg-gray-200"
+            className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-sm text-slate-700 hover:bg-slate-50"
           >
             Download PDF
           </button>
         )}
       </div>
+
     </div>
   );
 };

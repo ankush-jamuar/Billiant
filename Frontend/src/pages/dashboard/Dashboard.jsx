@@ -4,7 +4,6 @@ import RecentInvoices from "../../components/dashboard/RecentInvoices";
 import StatusChart from "../../components/dashboard/StatusChart";
 import { getDashboardSummary } from "../../services/dashboard.services";
 import { useAuth } from "../../context/AuthContext";
-import EmailVerificationBanner from "../../components/common/EmailVerificationBanner";
 import DashboardEmptyState from "../../components/dashboard/DashboardEmptyState";
 
 const Dashboard = () => {
@@ -32,7 +31,6 @@ const Dashboard = () => {
   if (summary.recentInvoices.length === 0) {
     return (
       <div className="space-y-6">
-        <EmailVerificationBanner user={user} />
         <DashboardEmptyState />
       </div>
     );
@@ -40,8 +38,6 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      {/* 🔔 Email verification */}
-      <EmailVerificationBanner user={user} />
 
       {/* 📊 Metrics */}
       <div className="grid grid-cols-4 gap-6">

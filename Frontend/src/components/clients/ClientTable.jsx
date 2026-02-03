@@ -1,31 +1,58 @@
 const ClientTable = ({ clients }) => {
-  if (clients.length === 0) {
-    return (
-      <div className="rounded border p-6 text-center text-gray-600">
-        No clients yet. Add your first client to get started.
-      </div>
-    );
-  }
-
   return (
-    <table className="w-full border-collapse">
-      <thead>
-        <tr className="border-b text-left">
-          <th className="py-2">Name</th>
-          <th>Email</th>
-          <th>Phone</th>
-        </tr>
-      </thead>
-      <tbody>
-        {clients.map((client) => (
-          <tr key={client._id} className="border-b">
-            <td className="py-2 font-medium">{client.name}</td>
-            <td>{client.email || "-"}</td>
-            <td>{client.phone || "-"}</td>
+    <div className="overflow-x-auto">
+      <table className="w-full border-collapse">
+        {/* HEADER */}
+        <thead>
+          <tr className="
+            border-b border-slate-200
+            bg-slate-50
+            text-left text-xs font-medium
+            uppercase tracking-wide text-slate-500
+          ">
+            <th className="px-6 py-3">Name</th>
+            <th className="px-6 py-3">Email</th>
+            <th className="px-6 py-3">Phone</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+
+        {/* BODY */}
+        <tbody>
+          {clients.map((client, idx) => (
+            <tr
+              key={client._id}
+              className={`
+                border-b last:border-b-0
+                transition
+                hover:bg-indigo-50/40
+                ${idx % 2 === 0 ? "bg-white" : "bg-slate-50/30"}
+              `}
+            >
+              {/* Name */}
+              <td className="px-6 py-4">
+                <p className="text-sm font-medium text-slate-900">
+                  {client.name}
+                </p>
+              </td>
+
+              {/* Email */}
+              <td className="px-6 py-4">
+                <p className="text-sm text-slate-600">
+                  {client.email || "—"}
+                </p>
+              </td>
+
+              {/* Phone */}
+              <td className="px-6 py-4">
+                <p className="text-sm text-slate-600">
+                  {client.phone || "—"}
+                </p>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 };
 

@@ -15,38 +15,40 @@ const InvoiceSummary = ({
   const total = subtotal + taxAmount - Number(discount);
 
   return (
-    <div className="rounded bg-white p-4 shadow-sm">
-      <h2 className="mb-4 font-medium">Summary</h2>
+    <div className="sticky top-6 rounded-xl border border-slate-200 bg-white p-6">
+      <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-600">
+        Invoice Summary
+      </h3>
 
-      <div className="space-y-2 text-sm">
-        <div className="flex justify-between">
+      <div className="space-y-3 text-sm">
+        <div className="flex justify-between text-slate-600">
           <span>Subtotal</span>
           <span>₹{subtotal.toFixed(2)}</span>
         </div>
 
-        <div className="flex justify-between items-center">
+        <div className="flex items-center justify-between text-slate-600">
           <span>Tax (%)</span>
           <input
             type="number"
             min="0"
-            className="w-24 rounded border px-2 py-1 text-right"
+            className="w-20 rounded-md border border-slate-300 px-2 py-1 text-right text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-100"
             value={tax}
             onChange={(e) => setTax(e.target.value)}
           />
         </div>
 
-        <div className="flex justify-between items-center">
+        <div className="flex items-center justify-between text-slate-600">
           <span>Discount (₹)</span>
           <input
             type="number"
             min="0"
-            className="w-24 rounded border px-2 py-1 text-right"
+            className="w-20 rounded-md border border-slate-300 px-2 py-1 text-right text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-100"
             value={discount}
             onChange={(e) => setDiscount(e.target.value)}
           />
         </div>
 
-        <div className="flex justify-between border-t pt-2 font-semibold">
+        <div className="border-t border-slate-200 pt-3 flex justify-between font-semibold text-slate-900">
           <span>Total</span>
           <span>₹{total.toFixed(2)}</span>
         </div>
@@ -54,7 +56,12 @@ const InvoiceSummary = ({
 
       <button
         onClick={onSave}
-        className="mt-6 w-full rounded bg-black px-4 py-2 text-white"
+        className="
+          mt-6 w-full rounded-xl
+          bg-indigo-600 px-4 py-2
+          text-sm font-medium text-white
+          hover:bg-indigo-700 transition
+        "
       >
         Save Draft
       </button>

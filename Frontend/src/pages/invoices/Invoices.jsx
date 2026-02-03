@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getInvoices } from "../../services/invoice.service";
+import { getClients } from "../../services/client.services";
 import InvoiceTable from "../../components/invoices/InvoiceTable";
 import EmptyState from "../../components/common/EmptyState";
 import { Search, Plus, FileText } from "lucide-react";
@@ -10,6 +11,16 @@ const Invoices = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
+  const [hasClients, setHasClients] = useState(true);
+
+  useEffect(() => {
+    const loadClients = async () => {
+      const res = await getClients();
+      setHasClients(res.data.data.length > 0);
+    };
+    loadClients();
+  }, []);
+
 
   const loadInvoices = async () => {
     try {
@@ -93,17 +104,26 @@ const Invoices = () => {
 
         {/* CTA */}
         <button
-          onClick={() => navigate("/invoices/new")}
-          className="
-            inline-flex items-center gap-2
-            rounded-xl bg-indigo-600
-            px-4 py-2 text-sm font-medium text-white
-            hover:bg-indigo-700 transition
-          "
-        >
-          <Plus size={16} />
-          New Invoice
-        </button>
+  onClick={() => {
+    if (!hasClients) {
+      navigate("/clients");
+      return;
+    }
+    navigate("/invoices/new");
+  }}
+  className={`
+    inline-flex items-center gap-2 rounded-xl px-4 py-2
+    text-sm font-medium text-white transition
+    ${
+      hasClients
+        ? "bg-indigo-600 hover:bg-indigo-700"
+        : "bg-slate-300 cursor-not-allowed"
+    }
+  `}
+>
+  + New Invoice
+</button>
+
       </div>
 
       {/* Table */}

@@ -115,33 +115,43 @@ const InvoiceForm = ({ invoiceId }) => {
   /* -------------------- GUARDS -------------------- */
 
   if (loading) {
-    return <p className="text-gray-500">Loading invoice form...</p>;
+    return (
+      <div className="rounded-xl border bg-white p-6 text-sm text-slate-500">
+        Loading invoice…
+      </div>
+    );
   }
 
   if (invoiceId && invoiceStatus !== "draft") {
     return (
-      <p className="text-red-500">
-        This invoice cannot be edited.
-      </p>
+      <div className="rounded-xl border bg-white p-6 text-sm text-red-600">
+        This invoice can no longer be edited.
+      </div>
     );
   }
 
   /* -------------------- UI -------------------- */
 
   return (
-    <div className="grid grid-cols-3 gap-6">
-      {/* LEFT: FORM */}
-      <div className="col-span-2 space-y-6">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      {/* LEFT */}
+      <div className="lg:col-span-2 space-y-6">
         {/* Client */}
-        <div className="rounded bg-white p-4 shadow-sm">
-          <label className="mb-2 block font-medium">Client</label>
+        <div className="rounded-xl border border-slate-200 bg-white p-6">
+          <label className="mb-2 block text-sm font-medium text-slate-700">
+            Client
+          </label>
 
           <select
             value={clientId}
             onChange={(e) => setClientId(e.target.value)}
-            className="w-full rounded border px-3 py-2"
+            className="
+              w-full rounded-lg border border-slate-300
+              bg-white px-3 py-2 text-sm
+              focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100
+            "
           >
-            <option value="">Select client</option>
+            <option value="">Select a client</option>
             {clients.map((c) => (
               <option key={c._id} value={c._id}>
                 {c.name}
@@ -151,27 +161,27 @@ const InvoiceForm = ({ invoiceId }) => {
         </div>
 
         {/* Dates */}
-        <div className="rounded bg-white p-4 shadow-sm">
-          <div className="grid grid-cols-2 gap-4">
+        <div className="rounded-xl border border-slate-200 bg-white p-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-sm font-medium">
+              <label className="mb-1 block text-sm font-medium text-slate-700">
                 Issue Date
               </label>
               <input
                 type="date"
-                className="w-full rounded border px-3 py-2"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
                 value={issueDate}
                 onChange={(e) => setIssueDate(e.target.value)}
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium">
+              <label className="mb-1 block text-sm font-medium text-slate-700">
                 Due Date
               </label>
               <input
                 type="date"
-                className="w-full rounded border px-3 py-2"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
               />
@@ -183,7 +193,7 @@ const InvoiceForm = ({ invoiceId }) => {
         <LineItems items={items} setItems={setItems} />
       </div>
 
-      {/* RIGHT: SUMMARY */}
+      {/* RIGHT */}
       <InvoiceSummary
         items={items}
         tax={tax}

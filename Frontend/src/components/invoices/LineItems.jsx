@@ -5,7 +5,6 @@ const LineItems = ({ items, setItems }) => {
       field === "quantity" || field === "unitPrice"
         ? Number(value)
         : value;
-
     setItems(updated);
   };
 
@@ -22,17 +21,19 @@ const LineItems = ({ items, setItems }) => {
   };
 
   return (
-    <div className="rounded bg-white p-4 shadow-sm">
-      <h2 className="mb-4 font-medium">Line Items</h2>
+    <div className="rounded-xl border border-slate-200 bg-white p-6">
+      <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-600">
+        Line Items
+      </h3>
 
       <div className="space-y-3">
         {items.map((item, index) => (
           <div
             key={index}
-            className="grid grid-cols-12 gap-2 items-center"
+            className="grid grid-cols-12 gap-3 items-center"
           >
             <input
-              className="col-span-5 rounded border px-3 py-2"
+              className="col-span-5 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-100"
               placeholder="Description"
               value={item.description}
               onChange={(e) =>
@@ -43,7 +44,7 @@ const LineItems = ({ items, setItems }) => {
             <input
               type="number"
               min="1"
-              className="col-span-2 rounded border px-3 py-2"
+              className="col-span-2 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-100"
               value={item.quantity}
               onChange={(e) =>
                 handleChange(index, "quantity", e.target.value)
@@ -53,20 +54,21 @@ const LineItems = ({ items, setItems }) => {
             <input
               type="number"
               min="0"
-              className="col-span-2 rounded border px-3 py-2"
+              className="col-span-2 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-100"
               value={item.unitPrice}
               onChange={(e) =>
                 handleChange(index, "unitPrice", e.target.value)
               }
             />
 
-            <div className="col-span-2 text-right font-medium">
+            <div className="col-span-2 text-right text-sm font-medium text-slate-900">
               ₹{item.quantity * item.unitPrice}
             </div>
 
             <button
               onClick={() => removeItem(index)}
-              className="col-span-1 text-gray-500 hover:text-red-600"
+              className="col-span-1 text-slate-400 hover:text-red-600 transition"
+              title="Remove"
             >
               ✕
             </button>
@@ -76,7 +78,7 @@ const LineItems = ({ items, setItems }) => {
 
       <button
         onClick={addItem}
-        className="mt-4 text-sm text-blue-600 hover:underline"
+        className="mt-4 text-sm font-medium text-indigo-600 hover:text-indigo-700"
       >
         + Add line item
       </button>
