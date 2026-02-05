@@ -10,9 +10,14 @@ export const getDashboardSummary = async (req, res) => {
     }
 
     const userId = req.user._id;
-    const today = new Date();
 
-    // Total revenue (PAID)
+    // ✅ Normalize today (start of day ONLY)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    /* -----------------------------
+       TOTAL REVENUE (PAID)
+    ----------------------------- */
     const totalRevenueAgg = await Invoice.aggregate([
       { $match: { userId, status: "paid" } },
       { $group: { _id: null, total: { $sum: "$total" } } },
@@ -20,7 +25,9 @@ export const getDashboardSummary = async (req, res) => {
 
     const totalRevenue = totalRevenueAgg[0]?.total || 0;
 
-    // Outstanding (SENT)
+    /* -----------------------------
+       OUTSTANDING (SENT)
+    ----------------------------- */
     const outstandingAgg = await Invoice.aggregate([
       { $match: { userId, status: "sent" } },
       { $group: { _id: null, total: { $sum: "$total" } } },
@@ -28,34 +35,48 @@ export const getDashboardSummary = async (req, res) => {
 
     const outstanding = outstandingAgg[0]?.total || 0;
 
-    // Draft count
+    /* -----------------------------
+       DRAFT COUNT
+    ----------------------------- */
     const draftCount = await Invoice.countDocuments({
       userId,
       status: "draft",
     });
 
-    // Overdue count
+    /* -----------------------------
+       OVERDUE COUNT (STRICT)
+    ----------------------------- */
     const overdueCount = await Invoice.countDocuments({
       userId,
       status: "sent",
-      dueDate: { $lt: today },
+      dueDate: { $lt: today }, // ✅ strictly before today
     });
 
-    // Recent invoices (DEFENSIVE)
+    /* -----------------------------
+       RECENT INVOICES
+    ----------------------------- */
     const recentInvoices = await Invoice.find({ userId })
       .sort({ createdAt: -1 })
       .limit(5)
       .populate("clientId", "name")
-      .select("invoiceNumber total status clientId")
+      .select("invoiceNumber total status clientId dueDate")
       .lean();
 
-    // Status breakdown
+    /* -----------------------------
+       STATUS BREAKDOWN (SAFE)
+    ----------------------------- */
     const statusAgg = await Invoice.aggregate([
       { $match: { userId } },
       { $group: { _id: "$status", count: { $sum: 1 } } },
     ]);
 
-    const statusBreakdown = { draft: 0, sent: 0, paid: 0 };
+    // ✅ Initialize with overdue included
+    const statusBreakdown = {
+      draft: 0,
+      sent: 0,
+      paid: 0,
+      overdue: overdueCount,
+    };
 
     statusAgg.forEach((s) => {
       if (statusBreakdown[s._id] !== undefined) {
@@ -63,6 +84,15 @@ export const getDashboardSummary = async (req, res) => {
       }
     });
 
+    // ✅ Remove overdue invoices from sent
+    statusBreakdown.sent = Math.max(
+      statusBreakdown.sent - overdueCount,
+      0
+    );
+
+    /* -----------------------------
+       RESPONSE
+    ----------------------------- */
     return res.json({
       success: true,
       data: {
@@ -75,7 +105,12 @@ export const getDashboardSummary = async (req, res) => {
           invoiceNumber: inv.invoiceNumber || "—",
           clientName: inv.clientId?.name || "—",
           total: inv.total || 0,
-          status: inv.status,
+          status:
+            inv.status === "sent" &&
+            inv.dueDate &&
+            new Date(inv.dueDate).setHours(0, 0, 0, 0) < today
+              ? "overdue"
+              : inv.status,
         })),
         statusBreakdown,
       },

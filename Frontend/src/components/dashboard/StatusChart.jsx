@@ -6,13 +6,14 @@ import {
 } from "recharts";
 
 const COLORS = {
-  draft: "#CBD5E1", // slate-300
-  sent: "#6366F1",  // indigo-500
-  paid: "#22C55E",  // green-500
+  draft: "#CBD5E1",   // slate-300
+  sent: "#6366F1",    // indigo-500
+  paid: "#22C55E",    // green-500
+  overdue: "#EF4444", // 🔴 red-500
 };
 
 const StatusChart = ({ data }) => {
-  // ✅ Normalize object → array
+  // Normalize object → array
   const chartData = data
     ? Object.entries(data).map(([status, count]) => ({
         status,
@@ -55,7 +56,7 @@ const StatusChart = ({ data }) => {
               {chartData.map((entry) => (
                 <Cell
                   key={entry.status}
-                  fill={COLORS[entry.status]}
+                  fill={COLORS[entry.status] || "#94A3B8"} // safe fallback
                 />
               ))}
             </Pie>
@@ -73,7 +74,10 @@ const StatusChart = ({ data }) => {
             <div className="flex items-center gap-2">
               <span
                 className="h-2.5 w-2.5 rounded-full"
-                style={{ backgroundColor: COLORS[item.status] }}
+                style={{
+                  backgroundColor:
+                    COLORS[item.status] || "#94A3B8",
+                }}
               />
               <span className="capitalize text-slate-700">
                 {item.status}
