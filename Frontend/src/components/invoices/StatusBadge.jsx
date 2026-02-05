@@ -14,10 +14,48 @@ const STATUS_STYLES = {
     className:
       "bg-emerald-50 text-emerald-700 border border-emerald-100",
   },
+  overdue: {
+    label: "Overdue",
+    className:
+      "bg-red-50 text-red-700 border border-red-100",
+  },
 };
 
-const StatusBadge = ({ status = "draft" }) => {
-  const config = STATUS_STYLES[status] || STATUS_STYLES.draft;
+/* -----------------------------
+   SAFE COMPUTED STATUS
+----------------------------- */
+const getComputedStatus = (invoice) => {
+  if (!invoice) return "draft";
+
+  const { status, dueDate } = invoice;
+
+  if (status === "paid") return "paid";
+
+  if (status === "sent" && dueDate) {
+    const today = new Date();
+    const due = new Date(dueDate);
+
+    // ⏱ Normalize time
+    today.setHours(0, 0, 0, 0);
+    due.setHours(0, 0, 0, 0);
+
+    if (due < today) {
+      return "overdue";
+    }
+  }
+
+  return status || "draft";
+};
+
+
+const StatusBadge = ({ invoice, status }) => {
+  // ✅ Works with EITHER invoice OR raw status
+  const computedStatus = invoice
+    ? getComputedStatus(invoice)
+    : status || "draft";
+
+  const config =
+    STATUS_STYLES[computedStatus] || STATUS_STYLES.draft;
 
   return (
     <span

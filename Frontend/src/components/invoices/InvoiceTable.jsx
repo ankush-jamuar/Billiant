@@ -68,9 +68,8 @@ const InvoiceTable = ({ invoices }) => {
               </td>
 
               <td className="px-6 py-4 text-center">
-                <StatusBadge status={inv.status} />
+                <StatusBadge invoice={inv} />
               </td>
-
               <td className="px-6 py-4">
                 <span className="text-sm text-slate-600">
                   {inv.dueDate

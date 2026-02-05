@@ -1,34 +1,188 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<body style="background:#f5f7fa;padding:30px;font-family:Arial">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Invoice {{invoiceNumber}}</title>
 
-<div style="max-width:600px;background:#fff;margin:auto;padding:30px;border-radius:8px">
+    <style>
+            body {
+              margin: 0;
+              padding: 0;
+              background: #f8fafc;
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                Roboto, Inter, Helvetica, Arial, sans-serif;
+              color: #0f172a;
+            }
 
-<h2>Invoice {{invoiceNumber}}</h2>
+            .wrapper {
+              width: 100%;
+              padding: 32px 0;
+            }
 
-<p>Hello {{clientName}},</p>
+            .container {
+              max-width: 600px;
+              margin: 0 auto;
+              background: #ffffff;
+              border-radius: 14px;
+              overflow: hidden;
+              box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+            }
 
-<p>
-You’ve received a new invoice from <b>{{senderName}}</b>.
-</p>
+            .header {
+              padding: 24px 32px;
+              border-bottom: 1px solid #e5e7eb;
+            }
 
-<p>
-<b>Total Amount:</b> ₹{{total}}
-</p>
+            .brand {
+              font-size: 20px;
+              font-weight: 700;
+              color: {{brandColor}};
+            }
 
-<p>
-Please find the detailed invoice attached as PDF.
-</p>
+            .content {
+              padding: 32px;
+            }
 
-<hr/>
+            .title {
+              font-size: 20px;
+              font-weight: 700;
+              margin-bottom: 6px;
+            }
 
-<p>
-Regards,<br/>
-<b>{{senderName}}</b><br/>
-{{senderEmail}}
-</p>
+            .subtitle {
+              font-size: 14px;
+              color: #475569;
+              margin-bottom: 24px;
+            }
 
-</div>
+            .status-box {
+              border-radius: 12px;
+              padding: 16px;
+              margin-bottom: 24px;
+              background: {{statusBg}};
+              border: 1px solid {{statusBorder}};
+              color: {{statusText}};
+              font-weight: 600;
+            }
 
-</body>
+            .row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        padding-bottom: 14px;
+      }
+
+            .row strong {
+              font-weight: 600;
+            }
+
+            .total {
+              font-size: 18px;
+              font-weight: 700;
+              margin-top: 12px;
+            }
+
+            .cta {
+              text-align: center;
+              margin: 32px 0;
+            }
+
+            .btn {
+              display: inline-block;
+              padding: 12px 24px;
+              background: {{brandColor}};
+              color: #ffffff;
+              font-weight: 600;
+              border-radius: 10px;
+            }
+
+            .sender {
+              font-size: 14px;
+              color: #475569;
+              line-height: 1.6;
+            }
+
+            .footer {
+              padding: 20px 32px;
+              font-size: 12px;
+              color: #64748b;
+              text-align: center;
+              border-top: 1px solid #e5e7eb;
+              background: #f8fafc;
+            }
+    </style>
+  </head>
+
+  <body>
+    <div class="wrapper">
+      <div class="container">
+        <div class="header">
+          <div class="brand">Billiant</div>
+        </div>
+
+        <div class="content">
+          <div class="title">Invoice {{invoiceNumber}}</div>
+          <div class="subtitle">Hi {{clientName}}, {{introLine}}</div>
+
+          <div class="status-box">{{statusMessage}}</div>
+
+          <table
+            width="100%"
+            cellpadding="0"
+            cellspacing="0"
+            style="font-size: 14px"
+          >
+            <tr>
+              <td style="padding-bottom: 14px">Invoice Number</td>
+              <td align="right" style="padding-bottom: 14px; font-weight: 600">
+                {{invoiceNumber}}
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding-bottom: 14px">Issued On</td>
+              <td align="right" style="padding-bottom: 14px; font-weight: 600">
+                {{issueDate}}
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding-bottom: 14px">Pay By</td>
+              <td align="right" style="padding-bottom: 14px; font-weight: 600">
+                {{dueDate}}
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding-top: 6px; font-size: 18px; font-weight: 700">
+                Amount {{amountLabel}}
+              </td>
+              <td
+                align="right"
+                style="padding-top: 6px; font-size: 18px; font-weight: 700"
+              >
+                ₹{{total}}
+              </td>
+            </tr>
+          </table>
+
+          <div class="cta">
+            <span class="btn">Invoice PDF Attached</span>
+          </div>
+
+          <div class="sender">
+            Sent by<br />
+            <strong>{{senderName}}</strong><br />
+            {{senderEmail}}<br /><br />
+            If you have any questions, simply reply to this email.
+          </div>
+        </div>
+
+        <div class="footer">
+          Generated via Billiant · Professional Invoicing Made Simple
+        </div>
+      </div>
+    </div>
+  </body>
 </html>

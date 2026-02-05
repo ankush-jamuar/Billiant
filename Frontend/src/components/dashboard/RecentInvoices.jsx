@@ -46,7 +46,7 @@ const RecentInvoices = ({ invoices }) => {
 
               {/* Right */}
               <div className="flex items-center gap-4">
-                <StatusBadge status={invoice.status} />
+                <StatusBadge invoice={invoice} />
 
                 <span className="text-sm font-medium text-slate-900">
                   ₹{invoice.total}
