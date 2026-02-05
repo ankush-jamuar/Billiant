@@ -1,6 +1,6 @@
 import express from "express";
 import { protect } from "../middleware/auth.middleware.js";
-import { register, login, verifyEmail, resendVerification, forgotPassword, resetPassword } from "../controllers/auth.controller.js";
+import { register, login, verifyEmail, resendVerification, forgotPassword, resetPassword, getMe, updateProfile } from "../controllers/auth.controller.js";
 
 const router = express.Router();
 
@@ -10,16 +10,7 @@ router.post("/resend-verification-email", protect, resendVerification);
 router.get("/verify-email", verifyEmail)
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
-router.get("/me", protect, (req, res) => {
-  res.json({
-    success: true,
-    data: {
-      _id: req.user._id,
-      name: req.user.name,
-      email: req.user.email,
-      isEmailVerified: req.user.isEmailVerified,
-    },
-  });
-});
+router.get("/me", protect, getMe);
+router.put("/me", protect, updateProfile);
 
 export default router;

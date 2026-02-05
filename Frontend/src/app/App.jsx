@@ -1,11 +1,10 @@
-import { useState } from "react";
 import { BrowserRouter } from "react-router-dom";
 import AppRoutes from "./routes";
 import { Toaster } from "react-hot-toast";
-import { AuthProvider } from "../context/AuthContext";
+import PlansOverlay from "../components/plans/PlansOverlay";
+import { useUi } from "../context/UiContext";
 function App() {
-  const [count, setCount] = useState(0);
-
+  const { showPlans, closePlans } = useUi();
   return (
     <BrowserRouter>
       <Toaster
@@ -20,6 +19,9 @@ function App() {
         }}
       />
       <AppRoutes />
+      {showPlans && (
+        <PlansOverlay onClose={closePlans} />
+      )}
     </BrowserRouter>
   );
 }

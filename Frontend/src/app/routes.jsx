@@ -13,10 +13,12 @@ import EditInvoice from "../pages/invoices/EditInvoice";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 import ResetPassword from "../pages/auth/ResetPassword";
 import Settings from "../pages/settings/Setting";
+import LandingPage from "../pages/landing/LandingPage";
 
 const AppRoutes = () => {
   return (
     <Routes>
+      <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/verify-email" element={<VerifyEmail />} />

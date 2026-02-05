@@ -7,10 +7,13 @@ import {
   Settings,
   ChevronLeft,
 } from "lucide-react";
+import { useUi } from "../../context/UiContext";
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
+  const { openPlans } = useUi();
+
 
   // Load persisted state
   useEffect(() => {
@@ -122,30 +125,42 @@ const Sidebar = () => {
 
       {/* Footer */}
       <div className="absolute bottom-0 w-full border-t bg-white px-4 py-3">
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-600">
-            A
-          </div>
-
+        <div
+          className={`
+      flex items-center
+      ${collapsed ? "justify-center" : "justify-between"}
+    `}
+        >
           {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="truncate text-sm font-medium text-slate-800">
-                Ankush Jamuar
-              </p>
-
-              <div className="flex items-center gap-2">
-                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">
-                  Free plan
-                </span>
-
-                <button className="text-[11px] font-medium text-indigo-600 hover:underline">
-                  Upgrade
-                </button>
-              </div>
-            </div>
+            <span className="text-sm font-medium text-slate-700">
+              Current plan
+            </span>
           )}
+
+          <div className="flex items-center gap-2">
+            <span
+              className="
+          rounded-full bg-slate-100
+          px-3 py-1 text-xs
+          font-medium text-slate-700
+        "
+            >
+              Free
+            </span>
+
+            {!collapsed && (
+              <button
+                onClick={openPlans}
+                className="text-[11px] font-medium text-indigo-600 hover:underline"
+              >
+                Upgrade
+              </button>
+
+            )}
+          </div>
         </div>
       </div>
+
     </aside>
   );
 };

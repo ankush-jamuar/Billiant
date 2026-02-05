@@ -309,3 +309,49 @@ export const resetPassword = async (req, res) => {
     message: "Password reset successful",
   });
 };
+
+export const getMe = (req, res) => {
+  res.status(200).json({
+    success: true,
+    data: {
+      id: req.user._id,
+      name: req.user.name,
+      email: req.user.email,
+      isEmailVerified: req.user.isEmailVerified,
+      createdAt: req.user.createdAt,
+    },
+  });
+};
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { name } = req.body;
+
+    if (!name || !name.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Name is required",
+      });
+    }
+
+    req.user.name = name.trim();
+    await req.user.save();
+
+    res.json({
+      success: true,
+      data: {
+        id: req.user._id,
+        name: req.user.name,
+        email: req.user.email,
+        isEmailVerified: req.user.isEmailVerified,
+        createdAt: req.user.createdAt,
+      },
+    });
+  } catch (err) {
+    console.error("Update profile failed:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update profile",
+    });
+  }
+};

@@ -18,8 +18,16 @@ export const resendVerification = () => {
 
 export const forgotPassword = (email) => {
   return api.post("/api/auth/forgot-password", { email });
-}
+};
 
 export const resetPassword = ({ token, password }) => {
   return api.post("/api/auth/reset-password", { token, password });
-}
+};
+
+export const getMe = () => {
+  return api.get("/api/auth/me")
+};
+
+export const updateMe = (payload) => {
+  return api.put("/api/auth/me", payload);
+};
