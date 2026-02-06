@@ -31,3 +31,11 @@ export const getMe = () => {
 export const updateMe = (payload) => {
   return api.put("/api/auth/me", payload);
 };
+
+export const changePassword = (payload) => {
+  return api.put("/api/auth/change-password", payload);
+};
+
+export const deleteAccount = () => {
+  return api.delete("/api/users/me")
+};

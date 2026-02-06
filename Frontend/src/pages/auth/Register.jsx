@@ -69,7 +69,6 @@ const Register = () => {
         <form onSubmit={handleSubmit} className="space-y-5">
           <Input
             label="Full name"
-            placeholder="John Doe"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
@@ -77,7 +76,6 @@ const Register = () => {
           <Input
             label="Email"
             type="email"
-            placeholder="you@company.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />

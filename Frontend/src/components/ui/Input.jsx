@@ -5,19 +5,22 @@ const Input = ({
   type = "text",
   value,
   onChange,
-  placeholder,
+  name,
+  ...rest
 }) => {
   const [focused, setFocused] = useState(false);
 
   return (
     <div className="relative">
       <input
+        name={name}
         type={type}
         value={value}
         onChange={onChange}
+        placeholder=" "        // ✅ ALWAYS invisible placeholder
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        placeholder=" "
+        {...rest}
         className={`
           peer w-full rounded-xl border bg-white px-4 pb-3 pt-6 text-sm
           text-slate-900 outline-none transition-all
