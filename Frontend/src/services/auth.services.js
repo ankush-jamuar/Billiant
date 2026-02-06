@@ -36,6 +36,8 @@ export const changePassword = (payload) => {
   return api.put("/api/auth/change-password", payload);
 };
 
-export const deleteAccount = () => {
-  return api.delete("/api/users/me")
+export const deleteAccount = (password) => {
+  return api.delete("/api/users/me", {
+    data: { password },
+  });
 };
