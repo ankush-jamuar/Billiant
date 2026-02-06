@@ -99,30 +99,46 @@ export const createInvoice = async (req, res) => {
 
 export const getInvoices = async (req, res) => {
   try {
-    const invoices = await Invoice.find({ userId: req.user._id })
-      .sort({ createdAt: -1 })
-      .populate("clientId", "name email");
+    const { q, status } = req.query;
 
-    const now = new Date();
+    const filter = {
+      userId: req.user._id,
+    };
 
-    const data = invoices.map((inv) => {
-      const isOverdue =
-        inv.status !== "paid" &&
-        inv.dueDate &&
-        new Date(inv.dueDate).getTime() < now.getTime();
+    // 🔍 Status filter
+    if (status && status !== "all") {
+      filter.status = status;
+    }
 
-      return {
-        ...inv.toObject(),
-        isOverdue,
-      };
+    let invoices = await Invoice.find(filter)
+      .populate("clientId", "name email")
+      .sort({ createdAt: -1 });
+
+    // 🔍 Search (invoice number OR client name)
+    if (q) {
+      const search = q.toLowerCase();
+
+      invoices = invoices.filter((inv) => {
+        return (
+          inv.invoiceNumber.toLowerCase().includes(search) ||
+          inv.clientId?.name?.toLowerCase().includes(search)
+        );
+      });
+    }
+
+    res.json({
+      success: true,
+      data: invoices,
     });
-
-    return res.json({ success: true, data });
   } catch (err) {
     console.error("Get invoices failed:", err);
-    res.status(500).json({ success: false });
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch invoices",
+    });
   }
 };
+
 
 
 

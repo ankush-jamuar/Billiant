@@ -1,8 +1,11 @@
 import api from "./api";
 
-export const getInvoices = () => {
-  return api.get("/api/invoices");
+export const getInvoices = ({ q = "", status = "all" } = {}) => {
+  return api.get("/api/invoices", {
+    params: { q, status },
+  });
 };
+
 
 export const createInvoice = (data) => {
   return api.post("/api/invoices", data);

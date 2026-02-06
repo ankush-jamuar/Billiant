@@ -25,12 +25,33 @@ export const createClient = async (req, res) => {
 };
 
 export const getClients = async (req, res) => {
-  const clients = await Client.find({ userId: req.user._id }).sort({
-    createdAt: -1,
-  });
+  try {
+    const { q } = req.query;
 
-  res.json({
-    success: true,
-    data: clients,
-  });
+    const filter = {
+      userId: req.user._id,
+    };
+
+    let clients = await Client.find(filter).sort({ createdAt: -1 });
+
+    if (q) {
+      const search = q.toLowerCase();
+      clients = clients.filter((c) =>
+        c.name.toLowerCase().includes(search) ||
+        c.email?.toLowerCase().includes(search) ||
+        c.phone?.includes(search)
+      );
+    }
+
+    res.json({
+      success: true,
+      data: clients,
+    });
+  } catch (err) {
+    console.error("Get clients failed:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch clients",
+    });
+  }
 };
