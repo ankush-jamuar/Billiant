@@ -51,7 +51,7 @@ export const renderInvoicePdf = (invoice, user) => {
   }
 
   html = html
-    .replace("{{PAID_WATERMARK}}", watermarkHtml)
+    .replaceAll("{{PAID_WATERMARK}}", watermarkHtml)
     .replaceAll("{{invoiceNumber}}", invoice.invoiceNumber)
     .replaceAll("{{issueDate}}", formatDate(invoice.issueDate))
     .replaceAll("{{dueDate}}", formatDate(invoice.dueDate))
