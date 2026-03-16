@@ -9,7 +9,15 @@ import userRoutes from "../routes/user.route.js"
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",   // local development
+      "https://billiant.vercel.app" // deployed frontend
+    ],
+    credentials: true
+  })
+);
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
