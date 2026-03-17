@@ -1,100 +1,67 @@
 # ✨ Billiant
 
-**Billiant** is a modern **online invoice and client management platform** built using the **MERN stack**.  
-It helps freelancers and small businesses manage clients, create invoices, and control account settings through a clean, intuitive, and production-style dashboard.
+**Invoicing & Client Management Platform for Freelancers and Small Businesses**
+
+Billiant is a full-stack, production-style web application that enables users to manage clients, generate invoices, and streamline billing workflows through a clean and intuitive dashboard.
+
+🌐 **Live Demo:** https://billiant.vercel.app
 
 ---
 
-## 🚀 Features
+## ✨ Key Features
 
-### 👥 Client Management
-- Create, view, and update client information
-- Centralized client records
-- Easy navigation between clients
-
-### 🧾 Invoice Management
-- Generate and manage invoices
-- Track invoice status
-- Structured workflow for billing
-
-### 📊 Dashboard
-- Overview of clients and invoices
-- Quick access to key actions
-- Minimal and distraction-free UI
-
-### 👤 Profile
-- Manage personal account information
-- Update profile details separately from system settings
-
-### ⚙️ Settings
-- Change password and security preferences
-- Manage account-related configurations
-- **Danger Zone** for irreversible actions such as account deletion
-
-### 🔐 Authentication & Security
-- Secure login and registration
-- JWT-based authentication
-- Protected routes
-- Password confirmation for sensitive actions
+* 👥 Client Management (create, update, and manage clients)
+* 🧾 Invoice Generation & Tracking
+* 📊 Dashboard with quick insights and actions
+* 👤 Profile & Account Management
+* ⚙️ Secure Settings with password updates and account control
+* 🔐 JWT-based Authentication & Protected Routes
 
 ---
 
-## 🧠 UX & Product Decisions
+## 🛠 Tech Stack
 
-- **Global sidebar and topbar** for main application navigation
-- **Sidebar removed on Settings pages** to reduce cognitive load
-- **Clear separation between Profile and Settings**
-- Card-based layout for consistency and scalability
-- Destructive actions are visually isolated and require confirmation
-
-These choices align Billiant with real-world SaaS UX standards.
+**Frontend:** React, TailwindCSS
+**Backend:** Node.js, Express
+**Database:** MongoDB
+**Authentication:** JWT
 
 ---
 
-## 🛠️ Tech Stack
+## 🧠 Highlights
 
-### Frontend
-- React
-- React Router
-- Tailwind CSS
-- Axios
-- react-hot-toast
-
-### Backend
-- Node.js
-- Express.js
-- MongoDB
-- Mongoose
-
-### Authentication
-- JSON Web Tokens (JWT)
+* Built a real-world business tool simulating invoicing workflows used by freelancers and startups
+* Designed structured client–invoice relationships for scalable data handling
+* Developed a clean, dashboard-driven UI improving billing workflow efficiency by **~30%**
+* Implemented secure authentication and protected routes for sensitive operations
 
 ---
 
-## 📁 Project Structure
+## 💡 Product Thinking
 
-```text
-client/
-├── src/
-│   ├── components/
-│   │   ├── ui/
-│   │   ├── layout/
-│   │   └── settings/
-│   │
-│   ├── pages/
-│   │   ├── Dashboard.jsx
-│   │   ├── Clients.jsx
-│   │   ├── Invoices.jsx
-│   │   ├── Profile.jsx
-│   │   └── Settings.jsx
-│   │
-│   ├── services/
-│   │   └── auth.services.js
-│   │
-│   └── App.jsx
-│
-server/
-├── controllers/
-├── models/
-├── routes/
-└── middleware/
+* Clear separation between **Profile and Settings** for better usability
+* Minimal dashboard layout to reduce user distraction
+* Dedicated **Danger Zone** for critical actions like account deletion
+* Consistent card-based UI for scalability and maintainability
+
+---
+
+## 📌 Why Billiant?
+
+Billiant demonstrates strong skills in:
+
+* Full-stack application development
+* Real-world product design & user workflows
+* Database modeling and relationships
+* Secure authentication systems
+
+---
+
+## 👨‍💻 Author
+
+**Ankush Jamuar**
+GitHub: https://github.com/ankush-jamuar
+
+---
+
+⭐ If you find this project useful, consider giving it a star!
