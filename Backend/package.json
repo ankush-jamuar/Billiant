@@ -12,7 +12,6 @@
   "author": "Ankush",
   "license": "ISC",
   "dependencies": {
-    "@getbrevo/brevo": "^5.0.1",
     "@sparticuz/chromium": "^143.0.4",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
@@ -21,6 +20,7 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.1.5",
+    "nodemailer": "^8.0.3",
     "puppeteer-core": "^24.39.1"
   },
   "devDependencies": {
