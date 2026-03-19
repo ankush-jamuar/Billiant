@@ -5,14 +5,15 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-  "start": "node src/server.js",
-  "dev": "nodemon src/server.js",
-  "postinstall": "npx puppeteer browsers install chrome"
-},
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
   "keywords": [],
   "author": "Ankush",
   "license": "ISC",
   "dependencies": {
+    "@getbrevo/brevo": "^5.0.1",
+    "@sparticuz/chromium": "^143.0.4",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "crypto": "^1.0.1",
@@ -20,8 +21,7 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.1.5",
-    "nodemailer": "^7.0.13",
-    "puppeteer": "^24.39.1"
+    "puppeteer-core": "^24.39.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.11"
