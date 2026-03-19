@@ -1,12 +1,16 @@
-import * as SibApiV3Sdk from "@getbrevo/brevo";
+import * as brevo from "@getbrevo/brevo";
 
 const getBrevoClient = () => {
   if (!process.env.BREVO_API_KEY) {
     throw new Error("BREVO_API_KEY missing in environment");
   }
 
-  const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
-  apiInstance.authentications["api-key"].apiKey = process.env.BREVO_API_KEY;
+  const apiInstance = new brevo.TransactionalEmailsApi();
+
+  // ✅ Correct way to set API key in @getbrevo/brevo
+  const apiKey = apiInstance.authentications["api-key"];
+  apiKey.apiKey = process.env.BREVO_API_KEY;
+
   return apiInstance;
 };
 
@@ -24,7 +28,7 @@ export const sendInvoiceEmail = async ({
 
   const apiInstance = getBrevoClient();
 
-  const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+  const sendSmtpEmail = new brevo.SendSmtpEmail();
 
   sendSmtpEmail.sender = {
     name: "Billiant Invoices",
@@ -49,7 +53,7 @@ export const sendVerificationEmail = async ({ to, name, token }) => {
 
   const verifyUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
 
-  const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+  const sendSmtpEmail = new brevo.SendSmtpEmail();
 
   sendSmtpEmail.sender = {
     name: "Billiant",
