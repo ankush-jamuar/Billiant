@@ -20,8 +20,8 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.1.5",
-    "nodemailer": "^8.0.3",
-    "puppeteer-core": "^24.39.1"
+    "puppeteer-core": "^24.39.1",
+    "sib-api-v3-sdk": "^8.5.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.11"
